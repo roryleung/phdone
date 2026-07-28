@@ -308,8 +308,29 @@ async function loadDefaultStickers(){
 }
 function allStickers(){const personal=Array.isArray(data.stickers)?data.stickers:[];return[...defaultStickers,...personal]}
 async function loadFromSupabase(){if(!currentUser)return;setSyncStatus("Loading synced data...");const{data:row,error}=await client.from("reward_bank").select("data").eq("user_id",currentUser.id).maybeSingle();if(error){setSyncStatus("Could not load data",true);console.error(error);alert("Could not load your reward bank. Check Supabase setup.");return}data=row?.data?normalizeData(row.data):structuredClone(defaultData);await loadDefaultStickers();ensureGameContent();syncAllTaskIncome();const purchasesSynced=syncAllPurchaseSpending();const ledgerRepaired=syncAppRewardLedger();const rateAdjusted=maybeAutoTuneRewards();if(!row?.data||rateAdjusted||purchasesSynced||ledgerRepaired)await saveNow();render();setSyncStatus("Synced ☁️");maybeRefreshExchangeRate()}
-function save(){render();setSyncStatus("Saving...");clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,250)}
-async function saveNow(){if(!currentUser)return;if(saveInProgress){saveQueued=true;return}saveInProgress=true;saveQueued=false;const{error}=await client.from("reward_bank").upsert({user_id:currentUser.id,data,updated_at:new Date().toISOString()},{onConflict:"user_id"});saveInProgress=false;if(error){setSyncStatus("Changes not saved",true);console.error(error)}else setSyncStatus("Synced ☁️");if(saveQueued)await saveNow()}
+function save(){
+  try{render()}catch(error){console.error("Render failed while saving",error);setSyncStatus("A screen error stopped saving",true);alert(`PhDone could not update the screen: ${error.message||error}`);return false}
+  setSyncStatus("Saving...");clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveNow(),250);return true
+}
+async function saveNow(){
+  if(!currentUser)return false;
+  if(saveInProgress){saveQueued=true;return true}
+  saveInProgress=true;saveQueued=false;
+  try{
+    const payload={user_id:currentUser.id,data:structuredClone(data),updated_at:new Date().toISOString()};
+    const{error}=await client.from("reward_bank").upsert(payload,{onConflict:"user_id"});
+    if(error)throw error;
+    setSyncStatus("Synced ☁️");
+    return true;
+  }catch(error){
+    setSyncStatus("Changes not saved",true);
+    console.error("reward_bank save failed",{error,userId:currentUser?.id,taskCount:data.tasks?.length});
+    return false;
+  }finally{
+    saveInProgress=false;
+    if(saveQueued){saveQueued=false;await saveNow()}
+  }
+}
 
 function taskIncomeGbp(t){
   const amount=Math.max(0,Number(t?.income||0));
@@ -373,7 +394,14 @@ async function loadPurchaseImages(items){for(const{p}of items){if(!p.imagePath)c
 
 function openTaskDialog(){$("taskName").value="";$("taskDate").value=today();$("taskCategory").value="work";$("taskHours").value="1";$("taskIncome").value="0";$("taskIncomeCurrency").value="GBP";suggestTaskReward();$("taskDialog").showModal()}
 function suggestTaskReward(){$("taskReward").value=(Number($("taskHours").value||0)*data.settings.hourlyRate).toFixed(2)}
-function addTask(e){e.preventDefault();data.tasks.unshift({id:uid(),name:$("taskName").value.trim(),date:$("taskDate").value,category:$("taskCategory").value,hours:Number($("taskHours").value),reward:Number($("taskReward").value),income:Number($("taskIncome").value||0),incomeCurrency:$("taskIncomeCurrency").value||"GBP",done:false,created:new Date().toISOString()});$("taskDialog").close();save()}
+async function addTask(e){
+  e.preventDefault();
+  const task={id:uid(),name:$("taskName").value.trim(),date:$("taskDate").value,category:$("taskCategory").value,hours:Number($("taskHours").value),reward:Number($("taskReward").value),income:Number($("taskIncome").value||0),incomeCurrency:$("taskIncomeCurrency").value||"GBP",done:false,created:new Date().toISOString()};
+  if(!task.name||!task.date||!Number.isFinite(task.hours)||task.hours<=0||!Number.isFinite(task.reward)||task.reward<0){alert("Please check the task name, date, hours and reward.");return}
+  data.tasks.unshift(task);
+  $("taskDialog").close();
+  try{render();setSyncStatus("Saving task...");const ok=await saveNow();if(!ok){data.tasks=data.tasks.filter(t=>t.id!==task.id);render();alert("The task was not saved. Open the browser console for the exact Supabase error.")}}catch(error){data.tasks=data.tasks.filter(t=>t.id!==task.id);console.error("Add task failed",error);render();alert(`The task could not be added: ${error.message||error}`)}
+}
 function linkedTaskIncomeIndex(taskId){return(data.financeEntries||[]).findIndex(e=>e.source==="task"&&e.sourceTaskId===taskId)}
 function syncTaskIncome(task){
   if(!task)return;
@@ -385,7 +413,17 @@ function syncTaskIncome(task){
   if(index>=0)data.financeEntries[index]=entry;else data.financeEntries.push(entry);
 }
 function syncAllTaskIncome(){for(const task of data.tasks)syncTaskIncome(task)}
-async function toggleTask(i){const t=data.tasks[i];t.done=!t.done;t.completedAt=t.done?new Date().toISOString():null;syncTaskIncome(t);syncAppRewardLedger();save();if(t.done){await showStickerInDialog("task");taskCelebrationDialog.showModal();celebrate()}}
+async function toggleTask(i){
+  const t=data.tasks[i];if(!t){console.error("Task index no longer exists",i);alert("This task view was out of date. The list has been refreshed.");renderTasks();return}
+  const previous={done:Boolean(t.done),completedAt:t.completedAt||null,financeEntries:structuredClone(data.financeEntries||[])};
+  t.done=!previous.done;t.completedAt=t.done?new Date().toISOString():null;
+  try{
+    syncTaskIncome(t);syncAppRewardLedger();render();setSyncStatus("Saving task status...");
+    const ok=await saveNow();
+    if(!ok){t.done=previous.done;t.completedAt=previous.completedAt;data.financeEntries=previous.financeEntries;render();alert("The task status was not saved and has been restored. Check the browser console for the Supabase error.");return}
+    if(t.done){await showStickerInDialog("task");taskCelebrationDialog.showModal();celebrate()}
+  }catch(error){t.done=previous.done;t.completedAt=previous.completedAt;data.financeEntries=previous.financeEntries;console.error("Task status update failed",error);render();alert(`The task status could not be changed: ${error.message||error}`)}
+}
 function editTaskReward(i){const v=prompt("Expected reward (£):",data.tasks[i].reward);if(v!==null&&!isNaN(Number(v))){data.tasks[i].reward=Math.max(0,Number(v));syncAppRewardLedger();save()}}
 function editTaskIncome(i){const task=data.tasks[i];if(!task)return;const amountText=prompt("Income generated by this task (enter 0 for none):",Number(task.income||0));if(amountText===null)return;const amount=Number(amountText);if(!Number.isFinite(amount)||amount<0){alert("Please enter a valid non-negative amount.");return}const currencyText=prompt("Income currency: GBP or HKD",task.incomeCurrency||"GBP");if(currencyText===null)return;const currency=currencyText.trim().toUpperCase();if(!["GBP","HKD","EUR"].includes(currency)){alert("Please enter GBP, HKD or EUR.");return}task.income=amount;task.incomeCurrency=currency;syncTaskIncome(task);syncAppRewardLedger();save()}
 function deleteTask(i){if(confirm("Delete this task?")){const task=data.tasks[i],linked=task?linkedTaskIncomeIndex(task.id):-1;if(linked>=0)data.financeEntries.splice(linked,1);data.tasks.splice(i,1);syncAppRewardLedger();save()}}
@@ -476,7 +514,7 @@ function financeStats(days=30){const s=ledgerStats(days);return{entries:s.entrie
 function renderFinance(){if(!$("moneySummary"))return;const days=$("financeWindow")?.value||"30",s=ledgerStats(days),target=adaptiveConfig().savingsTarget||30,cls=s.realSavingsRate>=target?"savings-good":"savings-low";$("moneySummary").innerHTML=`<div class="money-kpi"><div class="muted small">App spending money</div><div class="kpi">${money(s.appIncome)}</div><div class="small ${s.funAllowance>=0?'savings-good':'savings-low'}">${money(s.funAllowance)} left after optional purchases</div></div><div class="money-kpi"><div class="muted small">Real income</div><div class="kpi">${money(s.realIncome)}</div></div><div class="money-kpi"><div class="muted small">Unavoidable spending</div><div class="kpi savings-low">${money(s.unavoidable)}</div></div><div class="money-kpi"><div class="muted small">Real savings · target ${target}%</div><div class="kpi ${cls}">${s.realIncome>0?s.realSavingsRate.toFixed(1)+'%':'—'}</div></div>`;renderFinanceReports(days);const filter=$("ledgerFilter")?.value||"all",items=[...s.entries].filter(e=>filter==="all"||e.bucket===filter).sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));$("financeList").innerHTML=items.length?items.map(e=>{const i=data.financeEntries.findIndex(x=>x.id===e.id),income=e.bucket.endsWith("income"),locked=["task","purchase","app-reward"].includes(e.source);return`<div class="finance-entry"><div class="finance-icon">${income?'💰':'🧾'}</div><div><div class="item-title">${escapeHtml(e.name)}</div><div class="muted small">${displayDate(e.date)} · <span class="ledger-badge ${bucketClass(e.bucket)}">${bucketLabel(e.bucket)}</span>${e.note?` · ${escapeHtml(e.note)}`:''}</div></div><strong class="${income?'savings-good':'savings-low'}">${income?'+':'−'}${money(financeAmountGbp(e))}${e.currency==='HKD'?`<div class="muted tiny">${originalMoney(e.amount,'HKD')}</div>`:''}</strong><div><button class="ghost" onclick="openFinanceDialog(${i})" ${locked?'disabled title="Edit the linked source instead"':''}>✏️</button><button class="ghost" onclick="deleteFinanceEntry(${i})" ${locked?'disabled title="Remove the linked source instead"':''}>🗑️</button></div></div>`}).join(''):'<div class="empty">No transactions in this period.</div>'}
 function updateFinanceCategoryOptions(){const b=$("financeBucket")?.value;if(!b)return;const map={"real-income":[["work","💼 Work income"],["other-income","💰 Other income"]],"unavoidable-spending":[["essential","🏠 Essential bills"],["food","🛒 Groceries"],["transport","🚆 Necessary transport"],["health","🩺 Health"]],"discretionary-spending":[["fun","🎉 Fun / treats"],["shopping","🛍️ Shopping"],["travel","✈️ Leisure travel"],["other","📦 Other"]],"app-income":[["manual-app","✨ Manual app allowance"]]};$("financeCategory").innerHTML=(map[b]||map["discretionary-spending"]).map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}
 function openFinanceDialog(index=null){financeDialog.dataset.editIndex=index===null?'':String(index);const e=index===null?null:data.financeEntries[index];$("financeDialogTitle").textContent=index===null?'💷 Add transaction':'✏️ Edit transaction';$("financeBucket").value=e?.bucket||'real-income';updateFinanceCategoryOptions();$("financeDate").value=e?.date||today();$("financeName").value=e?.name||'';$("financeAmount").value=e?.amount||'';$("financeCurrency").value=e?.currency||'GBP';updateFinanceConversionPreview();$("financeCategory").value=e?.category||$("financeCategory").options[0]?.value;$("financeNote").value=e?.note||'';$("financeDialog").showModal()}
-function saveFinanceEntry(event){event.preventDefault();const raw=financeDialog.dataset.editIndex,index=raw===''?null:Number(raw),existing=index===null?null:data.financeEntries[index],currency=$("financeCurrency").value,amount=Math.max(.01,Number($("financeAmount").value)),rate=currency==='HKD'?roundToSignificantFigures(fxConfig().hkdToGbp,3):1,bucket=$("financeBucket").value;const item={...existing,id:existing?.id||uid(),bucket,type:bucket.endsWith('income')?'income':'spending',date:$("financeDate").value,name:$("financeName").value.trim(),amount,currency,exchangeRate:rate,gbpAmount:amount*rate,rateDate:currency==='HKD'?(fxConfig().rateDate||today()):null,category:$("financeCategory").value,note:$("financeNote").value.trim(),createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};if(index===null)data.financeEntries.push(item);else data.financeEntries[index]=item;$("financeDialog").close();save()}
+function saveFinanceEntry(event){event.preventDefault();const raw=financeDialog.dataset.editIndex,index=raw===''?null:Number(raw),existing=index===null?null:data.financeEntries[index],currency=$("financeCurrency").value,amount=Math.max(.01,Number($("financeAmount").value)),rate=currencyRate(currency),bucket=$("financeBucket").value;const item={...existing,id:existing?.id||uid(),bucket,type:bucket.endsWith('income')?'income':'spending',date:$("financeDate").value,name:$("financeName").value.trim(),amount,currency,exchangeRate:rate,gbpAmount:amount*rate,rateDate:currency!=='GBP'?(fxConfig().rateDate||today()):null,category:$("financeCategory").value,note:$("financeNote").value.trim(),createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};if(index===null)data.financeEntries.push(item);else data.financeEntries[index]=item;$("financeDialog").close();save()}
 function deleteFinanceEntry(index){if(confirm('Delete this money entry?')){data.financeEntries.splice(index,1);save()}}
 
 function openPurchaseDialog(index=null){purchaseDialog.dataset.editIndex=index===null?"":String(index);const p=index===null?null:data.purchases[index];$("purchaseDialogTitle").textContent=index===null?"🛍️ Add reward purchase":"✏️ Edit reward purchase";$("purchaseName").value=p?.name||"";$("purchaseDate").value=p?.date||today();$("purchaseAmount").value=p?.amount||"";$("purchaseSaveButton").textContent=index===null?"Add purchase":"Save changes";$("purchaseDialog").showModal()}
