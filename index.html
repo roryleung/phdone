@@ -176,6 +176,12 @@
 const SUPABASE_URL = "https://yivkvurydsjseogylaxj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xbK07GsS3Mq1CEd4TKbWGA_L5kUBERR";
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const LOCAL_DATA_KEY="phdone-v16-local";
+const REQUEST_TIMEOUT_MS=12000;
+function withTimeout(promise,label="Request",ms=REQUEST_TIMEOUT_MS){return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} timed out after ${Math.round(ms/1000)} seconds`)),ms))])}
+function readLocalData(){try{const raw=localStorage.getItem(LOCAL_DATA_KEY);return raw?normalizeData(JSON.parse(raw)):null}catch(error){console.warn("Could not read local backup",error);return null}}
+function writeLocalData(){try{localStorage.setItem(LOCAL_DATA_KEY,JSON.stringify(data))}catch(error){console.warn("Could not write local backup",error)}}
+
 
 const WISHLIST_BUCKET="future-purchases";
 const STICKER_BUCKET="encouragement-stickers";
@@ -283,9 +289,11 @@ function habitCycleTotal(h,cycle=habitCycle(h)){return habitCycleLogs(h,cycle).r
 function habitCycleClaimed(h,cycle=habitCycle(h)){return h.recurring?(h.claimedCycles||[]).includes(cycle.key):Boolean(h.claimed)}
 function updateHabitPeriodPreset(){const value=$("habitPeriodPreset")?.value;if(value&&value!=="custom")$("habitDays").value=value}
 async function loadDefaultStickers(){
-  const{data:rows,error}=await client.from("default_stickers").select("id,image_path,caption,created_at").eq("active",true).order("created_at",{ascending:true});
-  if(error){console.warn("Could not load default stickers",error);data.defaultStickers=[];return}
-  data.defaultStickers=(rows||[]).map(r=>({id:r.id,imagePath:r.image_path,caption:r.caption||"",addedBy:"system",createdAt:r.created_at}));
+  try{
+    const result=await withTimeout(client.from("default_stickers").select("id,image_path,caption,created_at").eq("active",true).order("created_at",{ascending:true}),"Loading stickers",8000);
+    if(result.error)throw result.error;
+    data.defaultStickers=(result.data||[]).map(r=>({id:r.id,imagePath:r.image_path,caption:r.caption||"",addedBy:"system",createdAt:r.created_at}));
+  }catch(error){console.warn("Default stickers unavailable; continuing without them.",error);data.defaultStickers=[]}
 }
 
 function normalizeHabitLogs(history){
@@ -300,7 +308,7 @@ function habitLogsOn(h,date){return normalizeHabitLogs(h.history).filter(log=>lo
 function normalizeData(v){return{version:16,stickers:(Array.isArray(v?.stickers)?v.stickers:[]).map(x=>({...x,id:x.id||uid(),caption:String(x.caption||""),addedBy:x.addedBy||"user"})),defaultStickers:[],settings:{hourlyRate:Number(v?.settings?.hourlyRate??3),incomeBonus:Number(v?.settings?.incomeBonus??2),questDifficulty:{enabled:v?.settings?.questDifficulty?.enabled!==false,targetCompletion:Number(v?.settings?.questDifficulty?.targetCompletion??65),reviewDays:Number(v?.settings?.questDifficulty?.reviewDays??28),sensitivity:Number(v?.settings?.questDifficulty?.sensitivity??.6),minDifficulty:Number(v?.settings?.questDifficulty?.minDifficulty??.8),maxDifficulty:Number(v?.settings?.questDifficulty?.maxDifficulty??1.5),currentDifficulty:Number(v?.settings?.questDifficulty?.currentDifficulty??1)},fx:{hkdToGbp:Number(v?.settings?.fx?.hkdToGbp??0.10),eurToGbp:Number(v?.settings?.fx?.eurToGbp??0.84),rateDate:v?.settings?.fx?.rateDate||null,lastUpdated:v?.settings?.fx?.lastUpdated||null,source:v?.settings?.fx?.source||"fallback",autoRefresh:v?.settings?.fx?.autoRefresh||"daily"},adaptiveRewards:{enabled:Boolean(v?.settings?.adaptiveRewards?.enabled),weeklyBudget:Number(v?.settings?.adaptiveRewards?.weeklyBudget??20),targetHours:Number(v?.settings?.adaptiveRewards?.targetHours??8),reviewWeeks:Number(v?.settings?.adaptiveRewards?.reviewWeeks??4),minRate:Number(v?.settings?.adaptiveRewards?.minRate??1),maxRate:Number(v?.settings?.adaptiveRewards?.maxRate??5),savingsTarget:Number(v?.settings?.adaptiveRewards?.savingsTarget??30),adjustmentSpeed:Number(v?.settings?.adaptiveRewards?.adjustmentSpeed??.35),lastAdjustedWeek:v?.settings?.adaptiveRewards?.lastAdjustedWeek||null,history:Array.isArray(v?.settings?.adaptiveRewards?.history)?v.settings.adaptiveRewards.history:[]}},tasks:(Array.isArray(v?.tasks)?v.tasks:[]).map(t=>({...t,id:t.id||uid(),date:t.date||dateOnly(t.created)||today(),category:t.category||"work",incomeCurrency:["GBP","HKD","EUR"].includes(t.incomeCurrency)?t.incomeCurrency:"GBP"})),habits:(Array.isArray(v?.habits)?v.habits:[]).map(h=>{const history=normalizeHabitLogs(h.history),mode=h.mode||"regular";return{...h,id:h.id||uid(),mode,startDate:h.startDate||dateOnly(h.started)||today(),category:h.category||"personal",history,count:history.reduce((sum,log)=>sum+Number(log.count||0),0),abstinenceStartedAt:h.abstinenceStartedAt||h.startedAt||(mode==="abstinence"?new Date(h.startDate||Date.now()).toISOString():null),abstinenceTargetDays:Number(h.abstinenceTargetDays||h.days||7),relapseHistory:normalizeRelapses(h.relapseHistory),cycleClaimedAt:h.cycleClaimedAt||null,recurring:mode==="regular"?Boolean(h.recurring):false,claimedCycles:Array.isArray(h.claimedCycles)?h.claimedCycles:[]}}),purchases:(Array.isArray(v?.purchases)?v.purchases:[]).map(p=>({...p,id:p.id||uid(),date:dateOnly(p.date)||today()})),wishList:(Array.isArray(v?.wishList)?v.wishList:[]).map(w=>({...w,id:w.id||uid(),targetDate:dateOnly(w.targetDate)||today(),priority:w.priority||"medium",imagePath:w.imagePath||null,notes:w.notes||""})),financeEntries:(Array.isArray(v?.ledgerEntries)?v.ledgerEntries:Array.isArray(v?.financeEntries)?v.financeEntries:[]).map(f=>{const currency=["GBP","HKD","EUR"].includes(f.currency)?f.currency:"GBP",amount=Math.max(0,Number(f.amount||0)),rate=currency==="HKD"?Number(f.exchangeRate||v?.settings?.fx?.hkdToGbp||0.10):currency==="EUR"?Number(f.exchangeRate||v?.settings?.fx?.eurToGbp||0.84):1;const bucket=f.bucket||(f.type==="income"?"real-income":(f.category==="essential"?"unavoidable-spending":"discretionary-spending"));const type=bucket.endsWith("income")?"income":"spending";return{...f,id:f.id||uid(),bucket,type,date:dateOnly(f.date)||today(),amount,currency,exchangeRate:rate,gbpAmount:Number(f.gbpAmount??(amount*rate)),rateDate:f.rateDate||null,name:String(f.name||"Money entry"),category:f.category||"other",note:String(f.note||"")}}),claimedLevelRewards:Array.isArray(v?.claimedLevelRewards)?v.claimedLevelRewards:[],weeklyClaims:v?.weeklyClaims&&typeof v.weeklyClaims==="object"?v.weeklyClaims:{},dailyQuests:v?.dailyQuests&&typeof v.dailyQuests==="object"?v.dailyQuests:{},weeklyQuests:v?.weeklyQuests&&typeof v.weeklyQuests==="object"?v.weeklyQuests:{},bonusEvents:Array.isArray(v?.bonusEvents)?v.bonusEvents:[],mysteryBoxes:Number(v?.mysteryBoxes||0),lastBoxResult:v?.lastBoxResult||null}}
 async function registerAndCheckAccount(){
   if(!currentUser)return false;
-  const{data:profile,error:touchError}=await client.rpc("touch_app_user");
+  let profile=null,touchError=null;try{const result=await withTimeout(client.rpc("touch_app_user"),"Checking account",8000);profile=result.data;touchError=result.error}catch(error){touchError=error}
   if(touchError){
     // Keep the personal app usable when the optional multi-user/admin migration
     // has not yet been installed or PostgREST permissions are incomplete.
@@ -318,9 +326,53 @@ async function registerAndCheckAccount(){
   $("adminDashboardButton").classList.toggle("hidden",row?.role!=="admin");
   return true;
 }
-async function loadFromSupabase(){if(!currentUser)return;setSyncStatus("Loading synced data...");const{data:row,error}=await client.from("reward_bank").select("data").eq("user_id",currentUser.id).maybeSingle();if(error){setSyncStatus("Could not load data",true);console.error(error);alert("Could not load your reward bank. Check Supabase setup.");return}data=row?.data?normalizeData(row.data):structuredClone(defaultData);await loadDefaultStickers();ensureGameContent();syncAllTaskIncome();const purchasesSynced=syncAllPurchaseSpending();const ledgerRepaired=syncAppRewardLedger();const rateAdjusted=maybeAutoTuneRewards();if(!row?.data||rateAdjusted||purchasesSynced||ledgerRepaired)await saveNow();render();setSyncStatus("Synced ☁️");maybeRefreshExchangeRate()}
-function save(){render();setSyncStatus("Saving...");clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,250)}
-async function saveNow(){if(!currentUser)return;if(saveInProgress){saveQueued=true;return}saveInProgress=true;saveQueued=false;const{error}=await client.from("reward_bank").upsert({user_id:currentUser.id,data,updated_at:new Date().toISOString()},{onConflict:"user_id"});saveInProgress=false;if(error){setSyncStatus("Changes not saved",true);console.error(error)}else setSyncStatus("Synced ☁️");if(saveQueued)await saveNow()}
+async function loadFromSupabase(){
+  if(!currentUser)return;
+  setSyncStatus("Loading synced data...");
+  let row=null,loadedFromCloud=false;
+  try{
+    const result=await withTimeout(client.from("reward_bank").select("data").eq("user_id",currentUser.id).maybeSingle(),"Loading synced data");
+    if(result.error)throw result.error;
+    row=result.data;
+    loadedFromCloud=true;
+  }catch(error){
+    console.error("Cloud load failed; using the local backup.",error);
+    setSyncStatus("Offline mode — local data",true);
+  }
+  try{
+    const local=readLocalData();
+    data=row?.data?normalizeData(row.data):(local||structuredClone(defaultData));
+    await loadDefaultStickers();
+    ensureGameContent();
+    syncAllTaskIncome();
+    const purchasesSynced=syncAllPurchaseSpending();
+    const ledgerRepaired=syncAppRewardLedger();
+    const rateAdjusted=maybeAutoTuneRewards();
+    render();
+    writeLocalData();
+    if(loadedFromCloud&&(!row?.data||rateAdjusted||purchasesSynced||ledgerRepaired))await saveNow();
+    setSyncStatus(loadedFromCloud?"Synced ☁️":"Offline mode — changes saved locally",!loadedFromCloud);
+    if(loadedFromCloud)maybeRefreshExchangeRate();
+  }catch(error){
+    console.error("App startup failed",error);
+    data=readLocalData()||structuredClone(defaultData);
+    try{ensureGameContent();render();writeLocalData()}catch(renderError){console.error("Fallback render failed",renderError)}
+    setSyncStatus("Loaded locally — cloud sync unavailable",true);
+  }
+}
+function save(){render();writeLocalData();setSyncStatus("Saving...");clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,250)}
+async function saveNow(){
+  if(!currentUser){writeLocalData();return}
+  if(saveInProgress){saveQueued=true;return}
+  saveInProgress=true;saveQueued=false;writeLocalData();
+  try{
+    const result=await withTimeout(client.from("reward_bank").upsert({user_id:currentUser.id,data,updated_at:new Date().toISOString()},{onConflict:"user_id"}),"Saving synced data");
+    if(result.error)throw result.error;
+    setSyncStatus("Synced ☁️");
+  }catch(error){setSyncStatus("Saved locally — cloud sync unavailable",true);console.error(error)}
+  finally{saveInProgress=false}
+  if(saveQueued)await saveNow()
+}
 
 function taskIncomeGbp(t){
   const amount=Math.max(0,Number(t?.income||0));
@@ -334,7 +386,7 @@ function taskIncomeGbp(t){
 function taskBaseReward(t){return Number(t.reward||0)+taskIncomeGbp(t)*data.settings.incomeBonus/100}
 function taskXp(t){return Math.round(taskBaseReward(t)*10)}
 function habitXp(h){return Math.round(Number(h.reward||0)*10)}
-function totals(){const completed=data.tasks.filter(t=>t.done);const taskEarned=completed.reduce((s,t)=>s+taskBaseReward(t),0);const habitEarned=data.habits.reduce((s,h)=>s+(h.claimed?Number(h.reward||0):0),0);const levelEarned=LEVELS.reduce((s,l)=>s+(data.claimedLevelRewards.includes(l.id)?l.bonus:0),0);const weeklyEarned=Object.values(data.weeklyClaims).flat().reduce((s,id)=>s+(WEEKLY_RANKS.find(r=>r.id===id)?.bonus||0),0);const bonusMoney=data.bonusEvents.reduce((s,e)=>s+Number(e.money||0),0);const spent=data.purchases.reduce((s,p)=>s+Number(p.amount||0),0);const coreXp=completed.reduce((s,t)=>s+taskXp(t),0)+data.habits.reduce((s,h)=>s+(h.claimed?habitXp(h):0),0);const bonusXp=data.bonusEvents.reduce((s,e)=>s+Number(e.xp||0),0);return{balance:taskEarned+habitEarned+levelEarned+weeklyEarned+bonusMoney-spent,xp:coreXp+bonusXp}}
+function totals(){const completed=data.tasks.filter(t=>t.done);const taskEarned=completed.reduce((s,t)=>s+taskBaseReward(t),0);const habitEarned=data.habits.reduce((s,h)=>s+(h.recurring?(h.claimedCycles||[]).length*Number(h.reward||0):(h.claimed?Number(h.reward||0):0)),0);const levelEarned=LEVELS.reduce((s,l)=>s+(data.claimedLevelRewards.includes(l.id)?l.bonus:0),0);const weeklyEarned=Object.values(data.weeklyClaims).flat().reduce((s,id)=>s+(WEEKLY_RANKS.find(r=>r.id===id)?.bonus||0),0);const bonusMoney=data.bonusEvents.reduce((s,e)=>s+Number(e.money||0),0);const spent=data.purchases.reduce((s,p)=>s+Number(p.amount||0),0);const coreXp=completed.reduce((s,t)=>s+taskXp(t),0)+data.habits.reduce((s,h)=>s+(h.recurring?(h.claimedCycles||[]).length*habitXp(h):(h.claimed?habitXp(h):0)),0);const bonusXp=data.bonusEvents.reduce((s,e)=>s+Number(e.xp||0),0);return{balance:taskEarned+habitEarned+levelEarned+weeklyEarned+bonusMoney-spent,xp:coreXp+bonusXp}}
 function weeklyXp(){const a=weekStart(),b=weekEnd();let xp=data.tasks.filter(t=>t.done&&inRange(t.completedAt,a,b)).reduce((s,t)=>s+taskXp(t),0);xp+=data.habits.filter(h=>h.claimed&&inRange(h.claimedAt,a,b)).reduce((s,h)=>s+habitXp(h),0);xp+=data.bonusEvents.filter(e=>inRange(e.date,a,b)).reduce((s,e)=>s+Number(e.xp||0),0);return xp}
 function currentLevel(xp){return LEVELS.find(l=>xp>=l.min&&xp<l.max)||LEVELS.at(-1)}
 function currentWeeklyRank(xp){return [...WEEKLY_RANKS].reverse().find(r=>xp>=r.min)||WEEKLY_RANKS[0]}
