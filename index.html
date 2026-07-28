@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -301,7 +301,16 @@ function normalizeData(v){return{version:16,stickers:(Array.isArray(v?.stickers)
 async function registerAndCheckAccount(){
   if(!currentUser)return false;
   const{data:profile,error:touchError}=await client.rpc("touch_app_user");
-  if(touchError){console.error("Could not register account",touchError);alert("The multi-user database setup has not been completed. Run phdone-multi-user-setup.sql in Supabase.");await client.auth.signOut();return false}
+  if(touchError){
+    // Keep the personal app usable when the optional multi-user/admin migration
+    // has not yet been installed or PostgREST permissions are incomplete.
+    console.warn("Multi-user profile service unavailable; continuing in personal mode.",touchError);
+    $("accountChip").textContent=`👤 ${currentUser.user_metadata?.display_name||currentUser.email||"Account"}`;
+    $("accountChip").classList.remove("hidden");
+    $("adminDashboardButton").classList.add("hidden");
+    setSyncStatus("Signed in — admin setup pending",true);
+    return true;
+  }
   const row=Array.isArray(profile)?profile[0]:profile;
   if(row?.status==="suspended"){alert("This account has been suspended. Contact the administrator.");await client.auth.signOut();return false}
   $("accountChip").textContent=`👤 ${row?.display_name||currentUser.email||"Account"}`;
@@ -316,10 +325,11 @@ async function saveNow(){if(!currentUser)return;if(saveInProgress){saveQueued=tr
 function taskIncomeGbp(t){
   const amount=Math.max(0,Number(t?.income||0));
   if(!amount)return 0;
-  if((t?.incomeCurrency||"GBP")!=="HKD")return amount;
+  const currency=t?.incomeCurrency||"GBP";
+  if(currency==="GBP")return amount;
   const linked=(data.financeEntries||[]).find(e=>e.source==="task"&&e.sourceTaskId===t.id);
   if(linked)return financeAmountGbp(linked);
-  return amount*roundToSignificantFigures(fxConfig().hkdToGbp,3);
+  return amount*roundToSignificantFigures(currencyRateToGbp(currency),3);
 }
 function taskBaseReward(t){return Number(t.reward||0)+taskIncomeGbp(t)*data.settings.incomeBonus/100}
 function taskXp(t){return Math.round(taskBaseReward(t)*10)}
