@@ -1,4 +1,4 @@
-const CACHE = 'phdone-v4-1-20260828';
+const CACHE = 'phdone-v4-8-20260828';
 const SHELL = [
   './index.html',
   './admin.html',
