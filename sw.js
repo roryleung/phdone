@@ -1,11 +1,13 @@
-const CACHE = 'phdone-shell-v3-3-trends-in-more';
+const CACHE = 'phdone-shell-v3-4-icon-refresh';
 const SHELL = [
   './index.html',
   './admin.html',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png'
+  './icons/favicon-32-v4.png',
+  './icons/apple-touch-icon-180-v4.png',
+  './icons/phdone-192-v4.png',
+  './icons/phdone-512-v4.png',
+  './icons/phdone-maskable-512-v4.png'
 ];
 
 self.addEventListener('install', event => {
