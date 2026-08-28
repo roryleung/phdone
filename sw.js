@@ -1,4 +1,4 @@
-const CACHE = 'phdone-shell-v3-4-icon-refresh';
+const CACHE = 'phdone-v4-1-20260828';
 const SHELL = [
   './index.html',
   './admin.html',

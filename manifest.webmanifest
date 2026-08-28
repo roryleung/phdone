@@ -2,15 +2,30 @@
   "id": "./",
   "name": "PhDone Reward Bank",
   "short_name": "PhDone",
-  "description": "A colourful productivity game with focus sessions, tasks, habits, rewards and trends.",
+  "description": "A productivity and personal-finance app with focus rewards, planning, trends and The Long Game multiplayer board.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#121d4d",
   "icons": [
-    {"src": "icons/phdone-192-v4.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "icons/phdone-512-v4.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "icons/phdone-maskable-512-v4.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "icons/phdone-192-v4.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/phdone-512-v4.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/phdone-maskable-512-v4.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
