@@ -244,6 +244,18 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 .banana-placement-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;margin:10px 0;border-radius:14px;background:#fff4b8;color:#3f3512;border:1px solid #ead36a}.banana-placement-banner.hidden{display:none}.banana-placement-banner>div:first-child{display:flex;flex-direction:column;gap:2px}.banana-placement-banner span{font-size:.78rem;opacity:.78}.banana-placement-actions{display:flex;gap:6px;align-items:center}.banana-placement-actions input{width:92px;padding:8px 9px;border-radius:10px}.banana-placement-actions button{padding:8px 10px}.game-tile.banana-placeable{cursor:crosshair;outline:2px dashed rgba(255,210,61,.78);outline-offset:-4px}.game-tile.banana-placeable:after{content:"🍌";position:absolute;inset:auto 4px 4px auto;font-size:.78rem;opacity:.72}.game-tile.banana-placeable:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(255,210,61,.25)}.item-mk-note{margin-top:5px;font-size:.77rem;color:var(--muted)}.item-dialog-hero .item-dialog-icon{font-size:2.1rem}.item-guide-row small{display:block;margin-top:2px}.game-item-card-v47 .item-icon{font-size:1.65rem}.home-game-item-btn.v47 span:first-child{font-size:1.2rem}
 @media(max-width:640px){.banana-placement-banner{align-items:flex-start;flex-direction:column}.banana-placement-actions{width:100%}.banana-placement-actions input{flex:1;width:auto}}
 </style>
+
+<style id="v411Styles">
+/* v4.11 reliability + balancing */
+.type-bad_luck{background:linear-gradient(155deg,#ffe8e8,#ffd0d5)!important;border-color:#f59ca7!important}.type-bad_luck .tile-icon{filter:saturate(1.15)}
+.type-lucky{background:linear-gradient(155deg,#e9fff5,#d9f9e8)!important;border-color:#80d9b3!important}
+.game-pressure-note{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.74rem;font-weight:850;background:rgba(255,255,255,.10);color:#f4f1ff}.game-pressure-note.high{background:#6e2434;color:#ffecef}.game-pressure-note.catchup{background:#174d3d;color:#eafff5}
+.weekly-xp-breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:rgba(255,255,255,.88)}.weekly-xp-breakdown span{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12)}
+.weekly-stage-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 8px}.weekly-stage-chip{font-size:.72rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;padding:5px 8px;border-radius:999px;background:#efeaff;color:#5d46c8}.weekly-stage-chip.boss{background:#fff0df;color:#a25119}.weekly-history-note{font-size:.74rem;color:var(--muted)}
+.board-reward-icon{font-size:4rem;line-height:1}.board-reward-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}.board-reward-kicker{font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.sync-degraded-note{margin-top:8px;padding:8px 10px;border-radius:12px;background:#fff7df;color:#7b5810;font-size:.78rem}
+@media(max-width:640px){.weekly-xp-breakdown{gap:5px}.weekly-xp-breakdown span{padding:3px 6px}.board-reward-actions button{flex:1}}
+</style>
 </head>
 <body>
 <section id="loginScreen" class="login-screen"><form id="loginForm" class="login-card"><h1>🎓 PhDone</h1><p id="authIntro" class="muted">Sign in to your synced productivity game.</p><div class="auth-switch"><button id="signInMode" type="button" class="active" onclick="setAuthMode('signin')">Sign in</button><button id="signUpMode" type="button" class="secondary" onclick="setAuthMode('signup')">Create account</button></div><input id="loginName" class="hidden" type="text" autocomplete="name" maxlength="80" placeholder="Display name"><input id="loginEmail" type="email" autocomplete="email" placeholder="Email address" required><input id="loginPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Password" required><div id="loginError" class="login-error" aria-live="polite"></div><button id="loginButton" class="primary" style="width:100%">🔓 Sign in</button><button id="forgotPasswordButton" type="button" class="ghost" style="width:100%;margin-top:8px" onclick="sendPasswordReset()">Forgot password?</button><p class="muted small" style="margin-top:14px">Each account has its own private data. Administrators can see account summaries through the separate dashboard.</p></form></section>
@@ -447,6 +459,8 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 <dialog id="gameLoadedDialog"><div class="modal"><h2>🪶 Feather</h2><p class="muted small">Precision move: choose exactly 1–6 for this roll.</p><div class="game-loaded-grid" style="margin:14px 0"><button class="secondary" onclick="useLoadedDie(1)">1</button><button class="secondary" onclick="useLoadedDie(2)">2</button><button class="secondary" onclick="useLoadedDie(3)">3</button><button class="secondary" onclick="useLoadedDie(4)">4</button><button class="secondary" onclick="useLoadedDie(5)">5</button><button class="secondary" onclick="useLoadedDie(6)">6</button></div><button class="ghost" style="width:100%" onclick="gameLoadedDialog.close()">Cancel</button></div></dialog>
 <dialog id="boxDialog"><div class="modal" style="text-align:center"><div id="boxGiftIcon" style="font-size:4rem">🎁</div><div id="boxStickerStatus" class="sticker-status small hidden" aria-live="polite"></div><img id="boxStickerImage" class="celebration-image hidden" alt="Encouragement sticker"><div id="boxStickerCaption" class="celebration-caption hidden"></div><h2 id="boxDialogTitle">Mystery reward</h2><p id="boxDialogText" style="font-size:1.2rem;font-weight:800;margin:12px 0"></p><button class="primary" onclick="boxDialog.close()">Nice! ✨</button></div></dialog>
 <dialog id="taskCelebrationDialog"><div class="modal" style="text-align:center"><div style="font-size:3.2rem">✅</div><div id="taskStickerStatus" class="sticker-status small hidden" aria-live="polite"></div><img id="taskStickerImage" class="celebration-image hidden" alt="Encouragement sticker"><div id="taskStickerCaption" class="celebration-caption hidden"></div><h2>Task completed!</h2><p class="muted">Your reward and XP have been added.</p><button class="primary" style="margin-top:14px" onclick="taskCelebrationDialog.close()">Keep going ✨</button></div></dialog>
+
+<dialog id="boardRewardDialog"><div class="modal" style="text-align:center"><div class="board-reward-kicker">THE LONG GAME</div><div id="boardRewardIcon" class="board-reward-icon">🎁</div><h2 id="boardRewardTitle" style="margin-top:8px">Reward collected</h2><p id="boardRewardText" class="muted" style="font-size:1rem;line-height:1.45;margin-top:8px"></p><div class="board-reward-actions"><button type="button" class="ghost" onclick="boardRewardDialog.close()">Keep playing</button><button id="boardRewardOpenButton" type="button" class="primary hidden" onclick="boardRewardDialog.close();openMysteryBox()">Open Mystery Box</button></div></div></dialog>
 <div id="confetti" class="confetti"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -571,10 +585,36 @@ function habitRecurrenceLabel(h){return({once:"One-time",weekly:"Weekly",fortnig
 function normalizeDataLegacy(v){return{version:18,stickers:(Array.isArray(v?.stickers)?v.stickers:[]).map(x=>({...x,id:x.id||uid(),caption:String(x.caption||""),showOnTask:x.showOnTask!==false,showOnBox:x.showOnBox!==false,addedBy:x.addedBy||"user"})),settings:{hourlyRate:Number(v?.settings?.hourlyRate??3),incomeBonus:Number(v?.settings?.incomeBonus??2),questDifficulty:{enabled:v?.settings?.questDifficulty?.enabled!==false,targetCompletion:Number(v?.settings?.questDifficulty?.targetCompletion??65),reviewDays:Number(v?.settings?.questDifficulty?.reviewDays??28),sensitivity:Number(v?.settings?.questDifficulty?.sensitivity??.6),minDifficulty:Number(v?.settings?.questDifficulty?.minDifficulty??.8),maxDifficulty:Number(v?.settings?.questDifficulty?.maxDifficulty??1.5),currentDifficulty:Number(v?.settings?.questDifficulty?.currentDifficulty??1)},fx:{hkdToGbp:Number(v?.settings?.fx?.hkdToGbp??0.10),eurToGbp:Number(v?.settings?.fx?.eurToGbp??0.84),rateDate:v?.settings?.fx?.rateDate||null,lastUpdated:v?.settings?.fx?.lastUpdated||null,source:v?.settings?.fx?.source||"fallback",autoRefresh:v?.settings?.fx?.autoRefresh||"daily"},adaptiveRewards:{enabled:Boolean(v?.settings?.adaptiveRewards?.enabled),weeklyBudget:Number(v?.settings?.adaptiveRewards?.weeklyBudget??20),targetHours:Number(v?.settings?.adaptiveRewards?.targetHours??8),reviewWeeks:Number(v?.settings?.adaptiveRewards?.reviewWeeks??4),minRate:Number(v?.settings?.adaptiveRewards?.minRate??1),maxRate:Number(v?.settings?.adaptiveRewards?.maxRate??5),savingsTarget:Number(v?.settings?.adaptiveRewards?.savingsTarget??30),adjustmentSpeed:Number(v?.settings?.adaptiveRewards?.adjustmentSpeed??.35),lastAdjustedWeek:v?.settings?.adaptiveRewards?.lastAdjustedWeek||null,history:Array.isArray(v?.settings?.adaptiveRewards?.history)?v.settings.adaptiveRewards.history:[]}},tasks:(Array.isArray(v?.tasks)?v.tasks:[]).map(t=>({...t,id:t.id||uid(),date:t.date||dateOnly(t.created)||today(),category:t.category||"work",incomeCurrency:["GBP","HKD","EUR"].includes(t.incomeCurrency)?t.incomeCurrency:"GBP"})),focusSessions:(Array.isArray(v?.focusSessions)?v.focusSessions:[]).map(x=>({...x,id:x.id||uid(),taskId:x.taskId||null,taskName:String(x.taskName||"Focus session"),localDate:x.localDate||dateOnly(x.startedAt)||today(),durationMinutes:Math.max(0,Number(x.durationMinutes||0))})),habits:(Array.isArray(v?.habits)?v.habits:[]).map(h=>{const history=normalizeHabitLogs(h.history),mode=h.mode||"regular";return{...h,id:h.id||uid(),mode,startDate:h.startDate||dateOnly(h.started)||today(),category:h.category||"personal",history,count:history.reduce((sum,log)=>sum+Number(log.count||0),0),abstinenceStartedAt:h.abstinenceStartedAt||h.startedAt||(mode==="abstinence"?new Date(h.startDate||Date.now()).toISOString():null),abstinenceTargetDays:Number(h.abstinenceTargetDays||h.days||7),relapseHistory:normalizeRelapses(h.relapseHistory),cycleClaimedAt:h.cycleClaimedAt||null,recurrence:h.recurrence||"once",days:Number(h.days||14),claimedCycles:Array.isArray(h.claimedCycles)?h.claimedCycles:[]}}),purchases:(Array.isArray(v?.purchases)?v.purchases:[]).map(p=>({...p,id:p.id||uid(),date:dateOnly(p.date)||today()})),wishList:(Array.isArray(v?.wishList)?v.wishList:[]).map(w=>({...w,id:w.id||uid(),targetDate:dateOnly(w.targetDate)||today(),priority:w.priority||"medium",imagePath:w.imagePath||null,notes:w.notes||""})),financeEntries:(Array.isArray(v?.ledgerEntries)?v.ledgerEntries:Array.isArray(v?.financeEntries)?v.financeEntries:[]).map(f=>{const currency=["GBP","HKD","EUR"].includes(f.currency)?f.currency:"GBP",amount=Math.max(0,Number(f.amount||0)),rate=currency==="GBP"?1:Number(f.exchangeRate||((currency==="HKD"?v?.settings?.fx?.hkdToGbp:v?.settings?.fx?.eurToGbp))||currencyRate(currency));const bucket=f.bucket||(f.type==="income"?"real-income":(f.category==="essential"?"unavoidable-spending":"discretionary-spending"));const type=bucket.endsWith("income")?"income":"spending";return{...f,id:f.id||uid(),bucket,type,date:dateOnly(f.date)||today(),amount,currency,exchangeRate:rate,gbpAmount:Number(f.gbpAmount??(amount*rate)),rateDate:f.rateDate||null,name:String(f.name||"Money entry"),category:f.category||"other",note:String(f.note||"")}}),claimedLevelRewards:Array.isArray(v?.claimedLevelRewards)?v.claimedLevelRewards:[],weeklyClaims:v?.weeklyClaims&&typeof v.weeklyClaims==="object"?v.weeklyClaims:{},dailyQuests:v?.dailyQuests&&typeof v.dailyQuests==="object"?v.dailyQuests:{},weeklyQuests:v?.weeklyQuests&&typeof v.weeklyQuests==="object"?v.weeklyQuests:{},bonusEvents:Array.isArray(v?.bonusEvents)?v.bonusEvents:[],defaultStickerUsage:v?.defaultStickerUsage&&typeof v.defaultStickerUsage==="object"?v.defaultStickerUsage:{},mysteryBoxes:Number(v?.mysteryBoxes||0),lastBoxResult:v?.lastBoxResult||null}}
 async function registerAndCheckAccount(){
   if(!currentUser)return false;
-  const{data:profile,error:touchError}=await client.rpc("touch_app_user");
-  if(touchError){console.error("Could not register account",touchError);alert("The multi-user database setup has not been completed. Run phdone-multi-user-setup.sql in Supabase.");await client.auth.signOut();return false}
-  const row=Array.isArray(profile)?profile[0]:profile;
-  if(row?.status==="suspended"){alert("This account has been suspended. Contact the administrator.");await client.auth.signOut();return false}
+  let profile=null,lastError=null;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const result=await client.rpc("touch_app_user");
+      if(!result.error){profile=result.data;lastError=null;break}
+      lastError=result.error;
+    }catch(error){lastError=error}
+    if(attempt<2)await new Promise(resolve=>setTimeout(resolve,300*(attempt+1)));
+  }
+  let row=Array.isArray(profile)?profile[0]:profile;
+  if(!row){
+    try{
+      const fallback=await client.from("app_users").select("user_id,display_name,role,status").eq("user_id",currentUser.id).maybeSingle();
+      if(!fallback.error&&fallback.data)row=fallback.data;
+    }catch(error){lastError=lastError||error}
+  }
+  if(row?.status==="suspended"){
+    alert("This account has been suspended. Contact the administrator.");
+    await client.auth.signOut();
+    return false;
+  }
+  if(!row){
+    // A flaky network, schema-cache hiccup or temporary RPC outage is not an authentication failure.
+    // Keep the valid Supabase session alive and let normal sync retry later.
+    console.warn("Account profile check temporarily unavailable; keeping session active",lastError);
+    // The auth-state callback already supplied a session user. Do not turn a temporary
+    // connectivity problem into an apparent logout. Continue in degraded-sync mode.
+    row={display_name:currentUser.user_metadata?.display_name||currentUser.email?.split("@")[0]||"Account",role:"user",status:"active"};
+    setSyncStatus("Sync temporarily unavailable - your session is still active",true);
+  }
   $("accountChip").textContent=`👤 ${row?.display_name||currentUser.email||"Account"}`;
   $("accountChip").classList.remove("hidden");
   $("adminDashboardButton").classList.toggle("hidden",row?.role!=="admin");
@@ -1028,7 +1068,7 @@ async function creditTaskToLongGame(task){const room=await activeLongGameRoomId(
 function openLoadedDie(){if(!longGame.inventory.some(x=>x.item_code==='loaded')){alert("You do not have a Loaded Die.");return}safeShowModal($("gameLoadedDialog"))}
 function useLoadedDie(value){$("gameLoadedDialog")?.close();rollLongGame('loaded',Number(value))}
 async function animateGameDice(rolls=[]){const face=$("gameDiceFace");if(!face)return;const final=Number(rolls.at(-1)||1);for(let i=0;i<8;i++){face.textContent=DIE_FACES[Math.floor(Math.random()*6)];await new Promise(r=>setTimeout(r,55+i*6))}face.textContent=DIE_FACES[Math.max(0,Math.min(5,final-1))]}
-async function rollLongGame(mode='normal',loadedValue=null){if(!longGame.room||!longGame.me)return;const mainBtn=$("gameRollButton"),homeBtn=$("homeGameRoll"),buttons=[mainBtn,homeBtn].filter(Boolean);buttons.forEach(b=>b.disabled=true);if($("gameRollButtonText"))$("gameRollButtonText").textContent='Rolling…';if($("homeGameRollText"))$("homeGameRollText").textContent='Rolling…';if($("gameLastResult"))$("gameLastResult").textContent='Rolling…';try{const{data:result,error}=await client.rpc("phdone_game_roll",{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;await animateGameDice(Array.isArray(result.rolls)?result.rolls:[]);await handleLongGameReward(result.reward,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($("gameRollButtonText"))$("gameRollButtonText").textContent=dice>0?`Roll ${dice} 🎲`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($("homeGameRollText"))$("homeGameRollText").textContent=dice>0?`Roll ${dice} 🎲`:`${Math.ceil(left)}m`}}}
+async function rollLongGame(mode='normal',loadedValue=null){if(!longGame.room||!longGame.me)return;const mainBtn=$("gameRollButton"),homeBtn=$("homeGameRoll"),buttons=[mainBtn,homeBtn].filter(Boolean);buttons.forEach(b=>b.disabled=true);if($("gameRollButtonText"))$("gameRollButtonText").textContent='Rolling…';if($("homeGameRollText"))$("homeGameRollText").textContent='Rolling…';if($("gameLastResult"))$("gameLastResult").textContent='Rolling…';try{const{data:result,error}=await client.rpc("phdone_game_roll",{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;await animateGameDice(Array.isArray(result.rolls)?result.rolls:[]);const primaryReward=(result.tile_type==='box'&&result.reward?.kind!=='personal_box')?{kind:'personal_box',boxes:1,text:'+1 Mystery Box'}:result.reward;await handleLongGameReward(primaryReward,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($("gameRollButtonText"))$("gameRollButtonText").textContent=dice>0?`Roll ${dice} 🎲`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($("homeGameRollText"))$("homeGameRollText").textContent=dice>0?`Roll ${dice} 🎲`:`${Math.ceil(left)}m`}}}
 async function handleLongGameReward(reward,eventId=null){if(!reward)return;if(reward.kind==='cash'&&Number(reward.money)>0){const key=eventId||`game-${Date.now()}-${reward.money}`;if(!data.bonusEvents.some(e=>e.gameEventId===key)){addBonus({label:`The Long Game: ${reward.text||'board bonus'}`,money:Number(reward.money),source:'long_game'});data.bonusEvents.at(-1).gameEventId=key;syncAppRewardLedger();await saveNow()}celebrate()}if(reward.kind==='item')longGame.lastResult=`🎁 Mystery Box: <strong>${escapeHtml(GAME_ITEMS[reward.item]?.name||reward.item)}</strong>`;if(reward.kind==='dice')longGame.lastResult=`🎁 ${escapeHtml(reward.text||'+1 die')}`}
 async function useLongGameItem(itemId,itemCode){if(!longGame.room)return;try{const{data:result,error}=await client.rpc("phdone_game_use_item",{p_room:longGame.room.id,p_item_id:itemId,p_target:null});if(error)throw error;longGame.lastResult=`${GAME_ITEMS[itemCode]?.icon||'🎁'} <strong>${escapeHtml(result.text||'Item used.')}</strong>`;await loadLongGameState(false)}catch(error){alert(error.message)}}
 function randomGameSticker(){const eligible=allStickers().map(stickerWithUsage);if(!eligible.length)return null;const min=Math.min(...eligible.map(stickerSeenCount)),pool=eligible.filter(x=>stickerSeenCount(x)===min);return pool[Math.floor(Math.random()*pool.length)]}
@@ -1262,7 +1302,7 @@ async function animateGameDice(rolls=[]){
 }
 async function rollLongGame(mode='normal',loadedValue=null){
   if(!longGame.room||!longGame.me)return;const startPos=Number(longGame.me.position||0),mainBtn=$('gameRollButton'),homeBtn=$('homeGameRoll'),buttons=[mainBtn,homeBtn].filter(Boolean),control=document.querySelector('.game-roll-compact');buttons.forEach(b=>b.disabled=true);control?.classList.add('is-moving');if($('gameRollButtonText'))$('gameRollButtonText').textContent='Rolling…';if($('homeGameRollText'))$('homeGameRollText').textContent='Rolling…';if($('gameLastResult'))$('gameLastResult').textContent='Rolling the die…';
-  try{const{data:result,error}=await client.rpc('phdone_game_roll',{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;const rolls=Array.isArray(result.rolls)?result.rolls:[];await animateGameDice(rolls);if($('gameRollLabel'))$('gameRollLabel').textContent=rolls.length>1?`Rolled ${rolls.join(' + ')} · move ${Number(result.move||0)}`:`Rolled ${rolls[0]||result.move||0}`;if($('homeGameRollText'))$('homeGameRollText').textContent=`Move ${Number(result.move||0)}`;await animateLongGameMovement(startPos,result);await handleLongGameReward(result.reward,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{control?.classList.remove('is-moving');const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($('gameRollButtonText'))$('gameRollButtonText').textContent=dice>0?`Roll ${dice} 🎲`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($('homeGameRollText'))$('homeGameRollText').textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`}}
+  try{const{data:result,error}=await client.rpc('phdone_game_roll',{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;const rolls=Array.isArray(result.rolls)?result.rolls:[];await animateGameDice(rolls);if($('gameRollLabel'))$('gameRollLabel').textContent=rolls.length>1?`Rolled ${rolls.join(' + ')} · move ${Number(result.move||0)}`:`Rolled ${rolls[0]||result.move||0}`;if($('homeGameRollText'))$('homeGameRollText').textContent=`Move ${Number(result.move||0)}`;await animateLongGameMovement(startPos,result);const primaryReward=(result.tile_type==='box'&&result.reward?.kind!=='personal_box')?{kind:'personal_box',boxes:1,text:'+1 Mystery Box'}:result.reward;await handleLongGameReward(primaryReward,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{control?.classList.remove('is-moving');const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($('gameRollButtonText'))$('gameRollButtonText').textContent=dice>0?`Roll ${dice} 🎲`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($('homeGameRollText'))$('homeGameRollText').textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`}}
 }
 
 async function finishFocusSession(completeTask=false,autoFinished=false){
@@ -1310,8 +1350,8 @@ async function findMyGameMembership(){if(!currentUser)return null;const fields="
 async function loadLongGameState(showErrors=true){if(!currentUser||longGame.loading)return;longGame.loading=true;try{const me=await findMyGameMembership();if(!me){longGame={...longGame,room:null,me:null,players:[],npcs:[],inventory:[],duels:[],events:[],loading:false};renderLongGame();renderHomeLongGame();return}try{await client.rpc("phdone_game_expire_duels",{p_room:me.room_id})}catch{}try{await client.rpc("phdone_game_tick_npcs",{p_room:me.room_id})}catch(error){if(gameMissingMessage(error))longGame.setupMissing=true;else console.warn('NPC tick skipped',error)}const[roomRes,playersRes,npcsRes,invRes,duelsRes,eventsRes]=await Promise.all([client.from("phdone_game_rooms").select("id,invite_code,name,created_by,active,created_at").eq("id",me.room_id).single(),client.from("phdone_game_players").select("room_id,user_id,display_name,avatar_path,position,checkpoint_floor,dice_bank,focus_remainder,next_roll_low,next_roll_bonus,shield_count,checkpoint_streak,checkpoints_reached,joined_at,updated_at").eq("room_id",me.room_id).order("joined_at"),client.from("phdone_game_npcs").select("id,room_id,npc_key,display_name,avatar_mark,personality,position,checkpoint_floor,checkpoint_streak,shield_count,next_roll_low,next_roll_bonus,item_code,move_counter,updated_at").eq("room_id",me.room_id).order("npc_key"),client.from("phdone_game_inventory").select("id,item_code,created_at").eq("room_id",me.room_id).eq("user_id",currentUser.id).order("created_at"),client.from("phdone_game_duels").select("id,room_id,challenger_id,opponent_id,game_type,seed,challenger_score,opponent_score,status,winner_id,reward,expires_at,created_at").eq("room_id",me.room_id).order("created_at",{ascending:false}).limit(12),client.from("phdone_game_events").select("id,user_id,npc_id,event_type,tile,detail,resolved,created_at").eq("room_id",me.room_id).order("created_at",{ascending:false}).limit(50)]);const error=roomRes.error||playersRes.error||npcsRes.error||invRes.error||duelsRes.error||eventsRes.error;if(error)throw error;const players=playersRes.data||[],freshMe=players.find(x=>x.user_id===currentUser.id)||me;longGame={...longGame,room:roomRes.data,me:freshMe,players,npcs:npcsRes.data||[],inventory:invRes.data||[],duels:duelsRes.data||[],events:eventsRes.data||[],loading:false,setupMissing:false};renderLongGame();renderHomeLongGame();hydrateGameAvatars();setTimeout(()=>retryFocusGameCredits(false),0)}catch(error){longGame.loading=false;console.error("Long Game load failed",error);if(gameMissingMessage(error)){longGame.setupMissing=true;renderLongGame();renderHomeLongGame()}else if(showErrors)alert(`Could not load The Long Game: ${error.message}`)}}
 
 function applyGameRegion(home=false){if(!longGame.me)return;const wrap=$(home?'homeGameTrackWrap':'gameBoardWrap'),reg=gameRegion(longGame.me.position);if(!wrap)return;for(let i=0;i<GAME_REGIONS.length;i++)wrap.classList.remove(`region-${i}`);wrap.classList.add(`region-${reg.index}`)}
-function renderLongGame(){const setup=$("longGameSetup"),active=$("longGameActive");if(!setup||!active)return;if(longGame.setupMissing){setup.classList.remove("hidden");active.classList.add("hidden");setup.innerHTML='<div class="game-warning"><strong>Long Game v4.8 database update required.</strong><div class="small" style="margin-top:5px">Run <code>SUPABASE_LONG_GAME_V4_8_MIGRATION.sql</code> once in Supabase.</div></div>';return}if(!longGame.me||!longGame.room){setup.classList.remove("hidden");active.classList.add("hidden");setup.innerHTML='<div class="muted small">Joining the shared board automatically...</div>';return}setup.classList.add("hidden");active.classList.remove("hidden");const me=longGame.me,dice=Number(me.dice_bank||0),pos=Number(me.position||0),remainder=Number(me.focus_remainder||0),left=Math.max(0,25-remainder),nextCheckpoint=Math.ceil((pos+1)/50)*50||50,reg=gameRegion(pos),rival=nearestNpcRival(),bonus=Number(me.next_roll_bonus||0);$("gameDiceBank").textContent=String(dice);$("gamePosition").textContent=String(pos);$("gameFocusRemainder").textContent=left<.1?"ready":`${Math.ceil(left)}m`;$("gameCheckpoint").textContent=String(nextCheckpoint);if($("gameRegionBadge"))$("gameRegionBadge").innerHTML=`<span>Region</span><strong class="region-name">${escapeHtml(reg.name)}</strong><small class="game-region-sub">${escapeHtml(reg.sub)}</small>`;if($("gameRivalChip"))$("gameRivalChip").innerHTML=rival?`<span>NPC rival</span><strong>${escapeHtml(rival.display_name)} +${Number(rival.position)-pos}</strong>`:`<span>NPC rival</span><strong>Clear road</strong>`;$("gameRollButton").disabled=dice<1;$("gameRollButtonText").textContent=dice>0?`Roll ${dice} \u{1F3B2}`:`Need ${Math.ceil(left)}m`;const effects=[bonus?`+${bonus} armed`:null,me.shield_count?`Super Horn x${me.shield_count}`:null,me.next_roll_low?'Bloopered':null].filter(Boolean);$("gameRollLabel").innerHTML=`${dice>0?`${dice} roll${dice===1?'':'s'} ready`:`${Math.ceil(left)} min to next die`}${effects.length?`<div class="game-active-effects">${effects.map(x=>`<span>${escapeHtml(x)}</span>`).join('')}</div>`:''}`;renderGamePlayers();renderGameRacerStrip();renderGameBoard();renderGameInventory();renderGamePendingSolo();renderGamePendingChoice();renderGameDuels();renderGameFeed();applyGameRegion(false);if(longGame.lastResult)$("gameLastResult").innerHTML=longGame.lastResult}
-function renderHomeLongGame(){const loading=$("homeLongGameLoading"),active=$("homeLongGameActive");if(!loading||!active)return;if(longGame.setupMissing){loading.classList.remove("hidden");active.classList.add("hidden");loading.innerHTML='Long Game needs the v4.8 Supabase migration.';return}if(!longGame.me){loading.classList.remove("hidden");active.classList.add("hidden");loading.textContent='Joining The Long Game...';return}loading.classList.add("hidden");active.classList.remove("hidden");const me=longGame.me,pos=Number(me.position||0),dice=Number(me.dice_bank||0),left=Math.max(0,25-Number(me.focus_remainder||0)),next=Math.ceil((pos+1)/50)*50||50,reg=gameRegion(pos),rival=nearestNpcRival(),bonus=Number(me.next_roll_bonus||0);$("homeGameDice").textContent=`${dice} dice${bonus?` +${bonus}`:''}`;$("homeGameMeta").textContent=`Tile ${pos} - ${reg.name} - checkpoint ${next} - ${Math.ceil(left)}m to die`;$("homeGameOpponent").textContent=rival?`NPC rival ${rival.display_name} is ${Number(rival.position)-pos} ahead - ${otherGameRacers().length+1} racers on board`:`${otherGameRacers().length+1} racers on board`;$("homeGameRoll").disabled=dice<1;$("homeGameRollText").textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`;renderGameTrack($("homeGameTrack"),true);renderHomeGameItems();renderHomeRacerStrip();renderGameAvatarInto($("homeGameAvatar"),me);renderGameAvatarInto($("profileGameAvatar"),me);applyGameRegion(true)}
+function renderLongGame(){const setup=$("longGameSetup"),active=$("longGameActive");if(!setup||!active)return;if(longGame.setupMissing){setup.classList.remove("hidden");active.classList.add("hidden");setup.innerHTML='<div class="game-warning"><strong>Long Game v4.11 database update required.</strong><div class="small" style="margin-top:5px">Run <code>SUPABASE_LONG_GAME_V4_11_MIGRATION.sql</code> once in Supabase.</div></div>';return}if(!longGame.me||!longGame.room){setup.classList.remove("hidden");active.classList.add("hidden");setup.innerHTML='<div class="muted small">Joining the shared board automatically...</div>';return}setup.classList.add("hidden");active.classList.remove("hidden");const me=longGame.me,dice=Number(me.dice_bank||0),pos=Number(me.position||0),remainder=Number(me.focus_remainder||0),left=Math.max(0,25-remainder),nextCheckpoint=Math.ceil((pos+1)/50)*50||50,reg=gameRegion(pos),rival=nearestNpcRival(),bonus=Number(me.next_roll_bonus||0);$("gameDiceBank").textContent=String(dice);$("gamePosition").textContent=String(pos);$("gameFocusRemainder").textContent=left<.1?"ready":`${Math.ceil(left)}m`;$("gameCheckpoint").textContent=String(nextCheckpoint);if($("gameRegionBadge"))$("gameRegionBadge").innerHTML=`<span>Region</span><strong class="region-name">${escapeHtml(reg.name)}</strong><small class="game-region-sub">${escapeHtml(reg.sub)}</small>`;if($("gameRivalChip"))$("gameRivalChip").innerHTML=rival?`<span>NPC rival</span><strong>${escapeHtml(rival.display_name)} +${Number(rival.position)-pos}</strong>`:`<span>NPC rival</span><strong>Clear road</strong>`;$("gameRollButton").disabled=dice<1;$("gameRollButtonText").textContent=dice>0?`Roll ${dice} \u{1F3B2}`:`Need ${Math.ceil(left)}m`;const effects=[bonus?`+${bonus} armed`:null,me.shield_count?`Super Horn x${me.shield_count}`:null,me.next_roll_low?'Bloopered':null].filter(Boolean);$("gameRollLabel").innerHTML=`${dice>0?`${dice} roll${dice===1?'':'s'} ready`:`${Math.ceil(left)} min to next die`}${effects.length?`<div class="game-active-effects">${effects.map(x=>`<span>${escapeHtml(x)}</span>`).join('')}</div>`:''}`;renderGamePlayers();renderGameRacerStrip();renderGameBoard();renderGameInventory();renderGamePendingSolo();renderGamePendingChoice();renderGameDuels();renderGameFeed();applyGameRegion(false);if(longGame.lastResult)$("gameLastResult").innerHTML=longGame.lastResult}
+function renderHomeLongGame(){const loading=$("homeLongGameLoading"),active=$("homeLongGameActive");if(!loading||!active)return;if(longGame.setupMissing){loading.classList.remove("hidden");active.classList.add("hidden");loading.innerHTML='Long Game needs the v4.11 Supabase migration.';return}if(!longGame.me){loading.classList.remove("hidden");active.classList.add("hidden");loading.textContent='Joining The Long Game...';return}loading.classList.add("hidden");active.classList.remove("hidden");const me=longGame.me,pos=Number(me.position||0),dice=Number(me.dice_bank||0),left=Math.max(0,25-Number(me.focus_remainder||0)),next=Math.ceil((pos+1)/50)*50||50,reg=gameRegion(pos),rival=nearestNpcRival(),bonus=Number(me.next_roll_bonus||0);$("homeGameDice").textContent=`${dice} dice${bonus?` +${bonus}`:''}`;$("homeGameMeta").textContent=`Tile ${pos} - ${reg.name} - checkpoint ${next} - ${Math.ceil(left)}m to die`;$("homeGameOpponent").textContent=rival?`NPC rival ${rival.display_name} is ${Number(rival.position)-pos} ahead - ${otherGameRacers().length+1} racers on board`:`${otherGameRacers().length+1} racers on board`;$("homeGameRoll").disabled=dice<1;$("homeGameRollText").textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`;renderGameTrack($("homeGameTrack"),true);renderHomeGameItems();renderHomeRacerStrip();renderGameAvatarInto($("homeGameAvatar"),me);renderGameAvatarInto($("profileGameAvatar"),me);applyGameRegion(true)}
 
 function racerTokenHtml(r,mini=true){if(r.kind==='npc')return`<span class="${mini?'mini-token':'game-token'} npc-token npc-${escapeHtml(r.personality||'wanderer')}" data-npc-id="${r.id}" title="${escapeHtml(r.display_name)} - NPC ${escapeHtml(r.personality||'racer')}">${escapeHtml(r.avatar_mark||gamePlayerInitial(r.display_name))}</span>`;return`<span class="${mini?'mini-token':'game-token'} ${r.user_id===currentUser.id?'me-token':''}" data-avatar-user="${r.user_id}" data-avatar-path="${escapeHtml(r.avatar_path||'')}" title="${escapeHtml(r.display_name)}">${escapeHtml(gamePlayerInitial(r.display_name))}</span>`}
 function renderGamePlayers(){const el=$("gamePlayers");if(!el||!longGame.me)return;const pos=Number(longGame.me.position||0),racers=allGameRacers().sort((a,b)=>Number(b.position)-Number(a.position));el.innerHTML=racers.map(r=>{const diff=Number(r.position)-pos,note=r.kind==='player'&&r.user_id===currentUser.id?'You':diff>0?`${diff} ahead`:diff<0?`${Math.abs(diff)} behind`:'Level';return`<div class="game-player ${r.kind==='npc'?'npc':''} ${r.kind==='player'&&r.user_id===currentUser.id?'me':''}"><button type="button" onclick="jumpToRacer('${r.kind}','${r.racer_id}',false)" title="Jump to ${escapeHtml(r.display_name)}">${racerTokenHtml(r,false)}</button><span><strong>${escapeHtml(r.display_name)}${r.kind==='npc'?' <span class="npc-badge">NPC</span>':''}</strong><small class="muted" style="display:block">Tile ${r.position} - ${note}</small></span>${r.shield_count?'<span title="Shield active">\u{1F6E1}\uFE0F</span>':''}</div>`}).join('');hydrateGameAvatars()}
@@ -1345,7 +1385,7 @@ function renderGameFeed(){const el=$("gameFeed");if(!el)return;if(!longGame.even
 
 async function animateLongGameMovement(start,result){const move=Math.max(0,Number(result?.move||0)),landing=start+move,finalPos=Number(result?.position??landing),tracks=[$("homeGameTrack"),$("gameBoard")].filter(Boolean);if(!tracks.length)return;await Promise.all(tracks.map(t=>animatePieceOnTrack(t,start,landing,'move')));if(finalPos!==landing){tracks.forEach(t=>t.querySelector(`.game-tile[data-tile="${landing}"]`)?.classList.add('piece-special'));if(!motionReduced())await waitMs(180);await Promise.all(tracks.map(t=>animatePieceOnTrack(t,landing,finalPos,finalPos>landing?'boost':'setback')))}tracks.forEach(t=>{const dest=t.querySelector(`.game-tile[data-tile="${finalPos}"]`);if(dest){dest.classList.add('destination-pulse');setTimeout(()=>dest.classList.remove('destination-pulse'),850)}});const passed=Array.isArray(result?.overtaken)?result.overtaken:[];if(passed.length){tracks.forEach(t=>passed.forEach(r=>{const tile=t.querySelector(`.game-tile[data-tile="${Number(r.position)}"]`);tile?.classList.add('racer-flash');setTimeout(()=>tile?.classList.remove('racer-flash'),700)}));showGameToast(`Overtake! Passed ${passed.map(r=>r.name).join(', ')}`)}}
 async function handleBonusGameRewards(rows=[]){for(const row of Array.isArray(rows)?rows:[]){if(row?.reward)await handleLongGameReward(row.reward,`${row.context||'bonus'}-${Date.now()}-${Math.random()}`);if(row?.context==='rival_catch')showGameToast(`Rival caught: ${row.name} - bonus item!`);else if(row?.context==='checkpoint_streak')showGameToast('Checkpoint streak bonus!');else if(row?.context==='overtake')showGameToast('Overtake bonus Mystery Box!')}}
-async function rollLongGame(mode='normal',loadedValue=null){if(!longGame.room||!longGame.me)return;const startPos=Number(longGame.me.position||0),mainBtn=$("gameRollButton"),homeBtn=$("homeGameRoll"),buttons=[mainBtn,homeBtn].filter(Boolean),control=document.querySelector('.game-roll-compact');buttons.forEach(b=>b.disabled=true);control?.classList.add('is-moving');if($("gameRollButtonText"))$("gameRollButtonText").textContent='Rolling...';if($("homeGameRollText"))$("homeGameRollText").textContent='Rolling...';if($("gameLastResult"))$("gameLastResult").textContent='Rolling the die...';try{const{data:result,error}=await client.rpc("phdone_game_roll",{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;const rolls=Array.isArray(result.rolls)?result.rolls:[];await animateGameDice(rolls);const bonus=Number(result.roll_bonus||0);if($("gameRollLabel"))$("gameRollLabel").textContent=rolls.length>1?`Rolled ${rolls.join(' + ')}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`:`Rolled ${rolls[0]||result.base_move||0}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`;if($("homeGameRollText"))$("homeGameRollText").textContent=`Move ${Number(result.move||0)}`;await animateLongGameMovement(startPos,result);await handleLongGameReward(result.reward,result.roll_event_id);await handleBonusGameRewards(result.bonus_rewards);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.choice_event_id){openGameChoice(result.choice_event_id)}else if(result.encounter_event_id){launchSoloMinigame(result.encounter_event_id,result.game_type||'timing',result.encounter_name||'NPC')}else if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}else if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{control?.classList.remove('is-moving');const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($("gameRollButtonText"))$("gameRollButtonText").textContent=dice>0?`Roll ${dice} \u{1F3B2}`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($("homeGameRollText"))$("homeGameRollText").textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`}}}
+async function rollLongGame(mode='normal',loadedValue=null){if(!longGame.room||!longGame.me)return;const startPos=Number(longGame.me.position||0),mainBtn=$("gameRollButton"),homeBtn=$("homeGameRoll"),buttons=[mainBtn,homeBtn].filter(Boolean),control=document.querySelector('.game-roll-compact');buttons.forEach(b=>b.disabled=true);control?.classList.add('is-moving');if($("gameRollButtonText"))$("gameRollButtonText").textContent='Rolling...';if($("homeGameRollText"))$("homeGameRollText").textContent='Rolling...';if($("gameLastResult"))$("gameLastResult").textContent='Rolling the die...';try{const{data:result,error}=await client.rpc("phdone_game_roll",{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;const rolls=Array.isArray(result.rolls)?result.rolls:[];await animateGameDice(rolls);const bonus=Number(result.roll_bonus||0);if($("gameRollLabel"))$("gameRollLabel").textContent=rolls.length>1?`Rolled ${rolls.join(' + ')}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`:`Rolled ${rolls[0]||result.base_move||0}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`;if($("homeGameRollText"))$("homeGameRollText").textContent=`Move ${Number(result.move||0)}`;await animateLongGameMovement(startPos,result);const primaryReward=(result.tile_type==='box'&&result.reward?.kind!=='personal_box')?{kind:'personal_box',boxes:1,text:'+1 Mystery Box'}:result.reward;await handleLongGameReward(primaryReward,result.roll_event_id);await handleBonusGameRewards(result.bonus_rewards,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.choice_event_id){openGameChoice(result.choice_event_id)}else if(result.encounter_event_id){launchSoloMinigame(result.encounter_event_id,result.game_type||'timing',result.encounter_name||'NPC')}else if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}else if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{control?.classList.remove('is-moving');const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($("gameRollButtonText"))$("gameRollButtonText").textContent=dice>0?`Roll ${dice} \u{1F3B2}`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($("homeGameRollText"))$("homeGameRollText").textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`}}}
 
 
 setInterval(()=>{if(currentUser&&(document.getElementById('tab-game')?.classList.contains('active')||document.getElementById('tab-dashboard')?.classList.contains('active')))loadLongGameState(false)},15000);
@@ -1356,14 +1396,38 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();def
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')});
 async function installPhDone(){if(!deferredInstallPrompt){alert('On Android, open your browser menu and choose “Install app” or “Add to Home screen”.');return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')}
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(error=>console.warn('Service worker registration failed',error)));
-client.auth.onAuthStateChange(async(event,session)=>{
+let authBootstrapTokenV411=0;
+async function bootstrapAuthenticatedSessionV411(user,{recovery=false}={}){
+  const token=++authBootstrapTokenV411;
+  if(!user)return;
+  currentUser=user;
+  const allowed=await registerAndCheckAccount();
+  if(token!==authBootstrapTokenV411||!allowed||!currentUser)return;
+  showApp();
+  await loadFromSupabase();
+  if(recovery)openPasswordDialog(true);
+}
+client.auth.onAuthStateChange((event,session)=>{
   currentUser=session?.user??null;
-  if(event==="PASSWORD_RECOVERY"){
-    if(currentUser){const allowed=await registerAndCheckAccount();if(allowed){showApp();await loadFromSupabase()}}
-    openPasswordDialog(true);
+  if(event==="SIGNED_OUT"||!currentUser){
+    authBootstrapTokenV411++;
+    data=structuredClone(defaultData);
+    $("accountChip")?.classList.add("hidden");
+    $("adminDashboardButton")?.classList.add("hidden");
+    showLogin();
     return;
   }
-  if(currentUser){const allowed=await registerAndCheckAccount();if(allowed){showApp();await loadFromSupabase()}}else{data=structuredClone(defaultData);$("accountChip")?.classList.add("hidden");$("adminDashboardButton")?.classList.add("hidden");showLogin()}
+  if(event==="TOKEN_REFRESHED"){
+    // Token refresh is routine. Do not re-bootstrap the whole app or call profile RPCs here.
+    return;
+  }
+  if(event==="PASSWORD_RECOVERY"){
+    setTimeout(()=>bootstrapAuthenticatedSessionV411(currentUser,{recovery:true}),0);
+    return;
+  }
+  if(["INITIAL_SESSION","SIGNED_IN","USER_UPDATED"].includes(event)){
+    setTimeout(()=>bootstrapAuthenticatedSessionV411(currentUser),0);
+  }
 });
 
 
@@ -1373,7 +1437,7 @@ Object.assign(GAME_ITEMS,{
   mushroom:{icon:'🍄',name:'Mushroom',desc:'Add +3 to your next move. Can stack to +6 before you roll.'},
   golden_mushroom:{icon:'✨🍄',name:'Golden Mushroom',desc:'Roll two dice and add them together for one move.'},
   feather:{icon:'🪶',name:'Feather',desc:'Choose your exact roll from 1–6. Any armed Mushroom bonus still stacks.'},
-  super_horn:{icon:'📣',name:'Super Horn',desc:'Blocks the next snake, Banana, Blooper or Spiny Shell that would hit you.'},
+  super_horn:{icon:'📣',name:'Super Horn',desc:'Blocks the next snake, Banana, Blooper, Spiny Shell or Bad Luck space that would hit you.'},
   banana:{icon:'🍌',name:'Banana',desc:'Place a hidden Banana on any board tile. The first non-owner racer landing there goes back 4.'},
   blooper:{icon:'🦑',name:'Blooper',desc:'Choose a racer. On their next roll they roll twice and must take the lower result.'},
   spiny_shell:{icon:'🔵',name:'Spiny Shell',desc:'Automatically hits the current leader and sends them back 4. You cannot use it while leading.'}
@@ -1500,6 +1564,193 @@ async function retryFocusGameCredits(showResult=false){
     if(corrections||checked)await saveNow();if(corrections||checked)await loadLongGameState(false);renderFinance();if(showResult){const parts=[];if(checked)parts.push(`${synced}/${checked} new Focus credits synced${dice?` · +${dice} dice`:''}`);if(corrections)parts.push(`${correctionSynced}/${corrections} corrected sessions reconciled`);alert(parts.length?parts.join('. ')+'.':'All Focus dice and corrections are already synced.')}
   }finally{focusCreditRepairRunning=false}
 }
-// PhDone v4.10 — Endless Quick Pick
+// PhDone v4.11 — Reliability + adaptive board balancing
+
+
+// PhDone v4.11 - reliability, adaptive luck and weekly challenge overhaul ----
+const V411_WEEKLY_CHALLENGE_VERSION=11;
+
+function weeklyXpBreakdownV411(){
+  const a=weekStart(),b=weekEnd();
+  const focus=(data.focusSessions||[]).filter(x=>inRange(x.localDate||dateOnly(x.startedAt),a,b)).reduce((s,x)=>s+Number(x.xpAward||0),0);
+  const tasks=(data.tasks||[]).filter(t=>t.done&&inRange(t.completedLocalDate||dateOnly(t.completedAt),a,b)).reduce((s,t)=>s+taskXp(t),0);
+  const habits=(data.habits||[]).filter(h=>h.claimed&&inRange(h.claimedAt,a,b)).reduce((s,h)=>s+habitXp(h),0);
+  const bonuses=(data.bonusEvents||[]).filter(e=>inRange(e.date,a,b)).reduce((s,e)=>s+Number(e.xp||0),0);
+  return{focus,tasks,habits,bonuses,total:focus+tasks+habits+bonuses};
+}
+weeklyXp=function(){return weeklyXpBreakdownV411().total};
+
+function ensureWeeklyXpBreakdownNodeV411(){
+  let el=$("weeklyXpBreakdownV411");if(el)return el;
+  const bar=$("weeklyFill")?.parentElement;if(!bar)return null;
+  el=document.createElement('div');el.id='weeklyXpBreakdownV411';el.className='weekly-xp-breakdown';bar.insertAdjacentElement('afterend',el);return el;
+}
+function renderWeeklyProgressV411(){
+  const b=weeklyXpBreakdownV411(),wx=b.total,top=WEEKLY_RANKS.at(-1),rank=currentWeeklyRank(wx),remaining=Math.max(0,top.min-wx);
+  if($("weeklyXpKpi"))$("weeklyXpKpi").textContent=`${wx.toLocaleString()} XP`;
+  if($("weeklyRankTitle"))$("weeklyRankTitle").textContent=`${rank.emoji} ${rank.name}`;
+  if($("weeklyProgressText"))$("weeklyProgressText").textContent=remaining?`${wx.toLocaleString()} / ${top.min.toLocaleString()} XP this week - ${remaining.toLocaleString()} to ${top.emoji} ${top.name}`:`${wx.toLocaleString()} XP this week - ${top.emoji} ${top.name} reached`;
+  if($("weeklyFill"))$("weeklyFill").style.width=`${Math.min(100,wx/Math.max(1,top.min)*100)}%`;
+  const el=ensureWeeklyXpBreakdownNodeV411();if(el)el.innerHTML=`<span>Focus ${b.focus.toLocaleString()}</span><span>Tasks ${b.tasks.toLocaleString()}</span><span>Habits ${b.habits.toLocaleString()}</span><span>Bonuses ${b.bonuses.toLocaleString()}</span>`;
+}
+
+function v411PriorWeeklyStats(){
+  const end=addDays(weekStart(),-1),start=addDays(end,-27),sessions=(data.focusSessions||[]).filter(s=>inRange(s.localDate||dateOnly(s.startedAt),start,end)),tasks=(data.tasks||[]).filter(t=>t.done&&inRange(t.completedLocalDate||dateOnly(t.completedAt),start,end));
+  const focusHours=sessions.reduce((s,x)=>s+Number(x.durationMinutes||0),0)/60/4;
+  const taskCount=tasks.length/4;
+  const blocks=sessions.filter(s=>Number(s.durationMinutes||0)>=20).length/4;
+  return{focusHours,taskCount,blocks};
+}
+function v411CurrentWeeklyMetric(type){
+  const a=weekStart(),b=weekEnd(),sessions=(data.focusSessions||[]).filter(s=>inRange(s.localDate||dateOnly(s.startedAt),a,b));
+  if(type==='hours')return sessions.reduce((s,x)=>s+Number(x.durationMinutes||0),0)/60;
+  if(type==='tasks')return(data.tasks||[]).filter(t=>t.done&&inRange(t.completedLocalDate||dateOnly(t.completedAt),a,b)).length;
+  if(type==='blocks')return sessions.filter(s=>Number(s.durationMinutes||0)>=20).length;
+  return 0;
+}
+function roundHalfUpV411(n){return Math.ceil(Number(n||0)*2)/2}
+function generateWeeklyChallengeV411(stage=1,history=[]){
+  stage=Math.min(3,Math.max(1,Number(stage)||1));const wk=weekKey(),types=['hours','tasks','blocks'],order=seededShuffle(types,`${wk}:${currentUser?.id||'u'}:v411`),type=order[(stage-1)%order.length],prior=v411PriorWeeklyStats(),current=v411CurrentWeeklyMetric(type);
+  let target,icon,text;
+  if(type==='hours'){
+    const stretch=stage===1?2:stage===2?2.5:3;target=Math.max(8+2*(stage-1),roundHalfUpV411(prior.focusHours*(1.20+.10*stage)),roundHalfUpV411(current+stretch));icon='🧠';text=`Focus for ${target} hours this week`;
+  }else if(type==='tasks'){
+    const stretch=stage===1?4:stage===2?5:6;target=Math.max(12+3*(stage-1),Math.ceil(prior.taskCount*(1.20+.10*stage)),Math.ceil(current+stretch));icon='🏹';text=`Complete ${target} tasks this week`;
+  }else{
+    const stretch=stage===1?4:stage===2?5:6;target=Math.max(14+4*(stage-1),Math.ceil(prior.blocks*(1.20+.10*stage)),Math.ceil(current+stretch));icon='🍅';text=`Complete ${target} focused work blocks of 20+ minutes`;
+  }
+  const rewards={1:{xp:100,money:.75,boxes:1},2:{xp:150,money:1,boxes:1},3:{xp:200,money:1.5,boxes:2}};
+  return{id:uid(),challengeVersion:V411_WEEKLY_CHALLENGE_VERSION,stage,type,icon,text,target,reward:rewards[stage],difficulty:stage===1?1.35:stage===2?1.55:1.75,claimed:false,createdAt:new Date().toISOString(),history:Array.isArray(history)?history:[]};
+}
+function weeklyQuestProgressV411(q){
+  if(!q)return 0;if(['hours','tasks','blocks'].includes(q.type))return v411CurrentWeeklyMetric(q.type);return weeklyQuestProgressLegacyV411(q);
+}
+const weeklyQuestProgressLegacyV411=weeklyQuestProgress;
+weeklyQuestProgress=weeklyQuestProgressV411;
+
+let v411QuestPersistTimer=null;
+function scheduleV411QuestPersist(){
+  if(!currentUser||saveConflict)return;clearTimeout(v411QuestPersistTimer);v411QuestPersistTimer=setTimeout(()=>{if(currentUser&&!saveConflict)saveNow().catch(error=>console.warn('Could not persist v4.11 quest upgrade yet',error))},350);
+}
+function ensureGameContentV411(){
+  const d=today(),wk=weekKey(),calc=questDifficultyCalculation(),difficulty=calc.difficulty;let changed=false;
+  // Restore adaptive daily quest generation, which an earlier v4 override had accidentally stopped creating.
+  if(!data.dailyQuests[d]){
+    let pool=[...DAILY_QUEST_POOL];if(!data.habits.length)pool=pool.filter(q=>q.type!=="habit_log");if(!data.tasks.some(t=>Number(t.income)>0))pool=pool.filter(q=>q.type!=="income_task");
+    data.dailyQuests[d]=seededShuffle(pool,d+(currentUser?.id||'')).slice(0,3).map(q=>({...adaptDailyQuest(q,difficulty),id:uid(),claimed:false}));changed=true;
+  }
+  const existing=data.weeklyQuests[wk];
+  if(!existing){data.weeklyQuests[wk]=generateWeeklyChallengeV411(1,[]);changed=true}
+  else if(Number(existing.challengeVersion||0)<V411_WEEKLY_CHALLENGE_VERSION){
+    const legacy={text:existing.text||'Legacy weekly challenge',target:existing.target,type:existing.type,claimed:Boolean(existing.claimed),claimedAt:existing.claimedAt||null,reward:existing.reward||null};
+    data.weeklyQuests[wk]=generateWeeklyChallengeV411(existing.claimed?2:1,existing.claimed?[legacy]:[]);changed=true;
+  }
+  const oldDaily=Object.keys(data.dailyQuests||{}).filter(k=>k<addDays(d,-45));oldDaily.forEach(k=>delete data.dailyQuests[k]);
+  const oldWeekly=Object.keys(data.weeklyQuests||{}).filter(k=>k<addDays(wk,-90));oldWeekly.forEach(k=>delete data.weeklyQuests[k]);
+  if(oldDaily.length||oldWeekly.length)changed=true;if(changed)scheduleV411QuestPersist();
+}
+ensureGameContent=ensureGameContentV411;
+
+function renderWeeklyQuestV411(){
+  const q=data.weeklyQuests[weekKey()],p=q?weeklyQuestProgress(q):0,target=Number(q?.target||1),done=p>=target,stage=Math.max(1,Number(q?.stage||1));
+  if($("weeklyQuestDates"))$("weeklyQuestDates").textContent=`${displayDate(weekStart())}-${displayDate(weekEnd())}`;
+  if(!$("weeklyQuestCard"))return;if(!q){$("weeklyQuestCard").innerHTML='';return}
+  const decimals=q.type==='hours'?1:0,history=(q.history||[]).length,unit=q.type==='hours'?' hours':q.type==='tasks'?' tasks':' blocks';
+  $("weeklyQuestCard").innerHTML=`<div class="quest-card ${done?'done':''}"><div class="weekly-stage-row"><span class="weekly-stage-chip ${stage===3?'boss':''}">${stage===3?'Final stage':'Stage '+stage} of 3</span><span class="weekly-history-note">Adaptive stretch goal${history?` - ${history} stage${history===1?'':'s'} already claimed`:''}</span></div><div class="row"><div class="quest-icon">${q.icon}</div><div style="flex:1"><div class="item-title">${escapeHtml(q.text)}</div><div class="muted small">${Number(p).toFixed(decimals)} / ${target}${unit}</div><div class="bar"><div class="fill" style="width:${Math.min(100,p/target*100)}%"></div></div><div class="quest-reward small" style="margin-top:7px">${rewardText(q.reward)}</div><div class="muted tiny quest-meta">Difficulty: ${stage===1?'Challenging':stage===2?'Hard':'Boss'} - generated from your recent pace</div></div>${q.claimed?'<span class="pill good">✓ Week conquered</span>':done?'<button class="primary" onclick="claimWeeklyQuest()">Claim + next stage</button>':'<span class="pill neutral">In progress</span>'}</div></div>`;
+}
+renderWeeklyQuest=renderWeeklyQuestV411;
+
+function claimWeeklyQuestV411(){
+  const wk=weekKey(),q=data.weeklyQuests[wk];if(!q||q.claimed||weeklyQuestProgress(q)<Number(q.target||0))return;
+  const claimed={text:q.text,target:q.target,type:q.type,stage:q.stage,reward:q.reward,claimedAt:new Date().toISOString()};
+  grantReward(q.reward,`Weekly challenge stage ${q.stage}: ${q.text}`,'weekly_quest');
+  const history=[...(q.history||[]),claimed];
+  if(Number(q.stage||1)<3)data.weeklyQuests[wk]=generateWeeklyChallengeV411(Number(q.stage||1)+1,history);
+  else{q.claimed=true;q.claimedAt=claimed.claimedAt;q.history=history}
+  celebrate();save();render();
+}
+claimWeeklyQuest=claimWeeklyQuestV411;
+regenerateCurrentQuests=function(){if(!confirm("Replace today's quests and restart this week's three-stage challenge? Already received rewards are not removed."))return;delete data.dailyQuests[today()];delete data.weeklyQuests[weekKey()];ensureGameContent();save();render()};
+
+// Patch the main renderer without duplicating the entire application render function.
+const renderBaseV411=render;
+render=function(){renderBaseV411();renderWeeklyProgressV411();renderWeeklyQuestV411()};
+
+function longGameStandingsV411(){return allGameRacers().map(r=>({...r,position:Number(r.position||0)})).sort((a,b)=>b.position-a.position)}
+function myBoardPressureV411(){
+  if(!longGame.me)return{mode:'normal',gap:0,rate:0};const standings=longGameStandingsV411(),me=standings.find(r=>r.kind==='player'&&r.user_id===currentUser.id);if(!me)return{mode:'normal',gap:0,rate:0};const leader=standings[0],second=standings.find(r=>r.racer_id!==me.racer_id);
+  if(leader?.racer_id===me.racer_id){const gap=Math.max(0,me.position-Number(second?.position||0)),rate=gap>=75?45:gap>=50?35:gap>=30?25:gap>=15?14:0;return{mode:rate?'leader':'normal',gap,rate}}
+  const gap=Math.max(0,Number(leader?.position||0)-me.position),rate=gap>=75?28:gap>=50?20:gap>=30?14:gap>=15?8:0;return{mode:rate?'catchup':'normal',gap,rate};
+}
+function pressureHashV411(tile,gap){return Math.abs(Number(tile||0)*41+Math.floor(Number(gap||0)/5)*17+13)%100}
+function gameDisplayTileTypeV411(tile){
+  const base=gameTileType(tile);if(base!=='normal')return base;const p=myBoardPressureV411();if(!p.rate)return base;return pressureHashV411(tile,p.gap)<p.rate?(p.mode==='leader'?'bad_luck':'lucky'):base;
+}
+const gameTrackTileHtmlBaseV411=gameTrackTileHtml;
+gameTrackTileHtml=function(tile,pos){
+  if(tile<0)return'<div class="game-tile game-tile-ghost" aria-hidden="true"></div>';
+  const type=gameDisplayTileTypeV411(tile),racers=allGameRacers().filter(r=>Number(r.position)===tile),relation=tile<pos?'is-past':tile===pos?'is-current':'is-future',icon=gameTileIcon(type),meHere=racers.some(r=>r.kind==='player'&&r.user_id===currentUser.id),placing=Boolean(bananaPlacement);
+  const label=type==='bad_luck'?'Leader-pressure Bad Luck':type==='lucky'?'Comeback Lucky':type;
+  return`<div class="game-tile type-${type} ${relation} ${meHere?'me-here':''} ${placing?'banana-placeable':''}" data-tile="${tile}" ${placing?`onclick="placeBananaOnTile(${tile})"`:''} title="${placing?`Place Banana on tile ${tile}`:`Tile ${tile}${type!=='normal'?` - ${label}`:''}`}"><span class="tile-no">${tile}</span><span class="tile-icon">${icon||'<span class="normal-dot"></span>'}</span><span class="tile-marker">${racers.map(r=>racerTokenHtml(r,true)).join('')}</span></div>`;
+}
+const gameTileIconBaseV411=gameTileIcon;
+gameTileIcon=function(type){if(type==='bad_luck')return'⚠️';if(type==='lucky')return'🍀';return gameTileIconBaseV411(type)};
+
+function renderPressureNoteV411(home=false){
+  const p=myBoardPressureV411(),host=home?$("homeGameOpponent"):$("gameRollLabel");if(!host||p.mode==='normal')return;
+  const text=p.mode==='leader'?`⚠ Leader pressure +${p.gap}: extra Bad Luck spaces active`:`🍀 Comeback luck -${p.gap}: extra Lucky spaces active`;
+  if(home){host.textContent=`${host.textContent} · ${text}`}
+  else host.insertAdjacentHTML('beforeend',`<div><span class="game-pressure-note ${p.mode==='leader'?'high':'catchup'}">${escapeHtml(text)}</span></div>`);
+}
+const renderLongGameBaseV411=renderLongGame;
+renderLongGame=function(){renderLongGameBaseV411();if(!longGame.setupMissing&&longGame.me){renderPressureNoteV411(false)}};
+const renderHomeLongGameBaseV411=renderHomeLongGame;
+renderHomeLongGame=function(){renderHomeLongGameBaseV411();if(!longGame.setupMissing&&longGame.me){renderPressureNoteV411(true)}};
+
+function gameRewardReceiptExistsV411(key){return Boolean(key&&(data.bonusEvents||[]).some(e=>e.gameEventId===key))}
+function applyLongGamePersonalRewardV411(reward,key){
+  if(!reward||!key||gameRewardReceiptExistsV411(key))return false;
+  if(reward.kind==='personal_box'){
+    const boxes=Math.max(1,Number(reward.boxes||1));data.mysteryBoxes=Math.max(0,Number(data.mysteryBoxes||0))+boxes;const entry={id:uid(),label:`The Long Game: ${reward.text||'Mystery Box'}`,xp:0,money:0,boxes,date:today(),source:'long_game_box',createdAt:new Date().toISOString(),gameEventId:key};data.bonusEvents.push(entry);return true;
+  }
+  if(reward.kind==='cash'&&Number(reward.money)>0){addBonus({label:`The Long Game: ${reward.text||'board bonus'}`,money:Number(reward.money),source:'long_game'});data.bonusEvents.at(-1).gameEventId=key;return true}
+  return false;
+}
+function showBoardRewardV411(reward){
+  if(!reward||!$("boardRewardDialog"))return;let icon='🎁',title='Reward collected',text=reward.text||'A board reward was added.';const open=$("boardRewardOpenButton");open?.classList.add('hidden');
+  if(reward.kind==='personal_box'){icon='🎁';title='Mystery Box collected!';text='A Mystery Box has been added to your Home stash. You can open it now or save it for later.';open?.classList.remove('hidden')}
+  else if(reward.kind==='item'){const m=GAME_ITEMS[reward.item];icon=m?.icon||'🎁';title=m?.name||'Item collected';text=m?.desc||'The item was added to your inventory.'}
+  else if(reward.kind==='dice'){icon='🎲';title='Bonus die!';text=reward.text||'+1 bonus die'}
+  else if(reward.kind==='cash'){icon='💷';title='Board bonus';text=reward.text||money(reward.money)}
+  $("boardRewardIcon").textContent=icon;$("boardRewardTitle").textContent=title;$("boardRewardText").textContent=text;safeShowModal($("boardRewardDialog"));
+}
+handleLongGameReward=async function(reward,eventId=null,{announce=true,persist=true}={}){
+  if(!reward)return{changed:false};let changed=false;const key=eventId||null;
+  if(key)changed=applyLongGamePersonalRewardV411(reward,key);
+  if(changed){syncAppRewardLedger();if(persist)await saveNow();render()}
+  if(reward.kind==='item')longGame.lastResult=`🎁 Item: <strong>${escapeHtml(GAME_ITEMS[reward.item]?.name||reward.item||'reward')}</strong>`;
+  else if(reward.kind==='dice')longGame.lastResult=`🎲 ${escapeHtml(reward.text||'+1 bonus die')}`;
+  else if(reward.kind==='personal_box')longGame.lastResult='🎁 <strong>+1 Mystery Box</strong> added to Home.';
+  else if(reward.kind==='cash')longGame.lastResult=`💷 <strong>${escapeHtml(reward.text||money(reward.money))}</strong>`;
+  if(announce){showBoardRewardV411(reward);if(reward.kind==='personal_box'||reward.kind==='cash')celebrate()}
+  return{changed};
+};
+handleBonusGameRewards=async function(rows=[],parentEventId=null){
+  let i=0;for(const row of Array.isArray(rows)?rows:[]){const key=parentEventId?`${parentEventId}:bonus:${i}`:null;if(row?.reward)await handleLongGameReward(row.reward,key,{announce:true,persist:true});if(row?.context==='rival_catch')showGameToast(`Rival caught: ${row.name} - bonus item!`);else if(row?.context==='checkpoint_streak')showGameToast('Checkpoint streak bonus!');else if(row?.context==='overtake')showGameToast('Overtake bonus!');i++}
+};
+async function reconcileLongGameRewardsV411(){
+  if(!currentUser||!longGame.events?.length)return;let changed=false;
+  for(const e of longGame.events){if(e.user_id!==currentUser.id||e.event_type!=='roll')continue;const d=e.detail||{};if(d.reward)changed=applyLongGamePersonalRewardV411(d.reward,e.id)||changed;for(let i=0;i<(Array.isArray(d.bonus_rewards)?d.bonus_rewards:[]).length;i++){const row=d.bonus_rewards[i];if(row?.reward)changed=applyLongGamePersonalRewardV411(row.reward,`${e.id}:bonus:${i}`)||changed}}
+  if(changed){syncAppRewardLedger();await saveNow();render();showGameToast('Recovered a board reward that had not synced to Home.')}
+}
+const loadLongGameStateBaseV411=loadLongGameState;
+loadLongGameState=async function(showErrors=true){await loadLongGameStateBaseV411(showErrors);if(longGame.me&&!longGame.setupMissing)await reconcileLongGameRewardsV411()};
+
+// Make special-space legend understand adaptive spaces.
+const renderGameBoardBaseV411=renderGameBoard;
+renderGameBoard=function(){renderGameBoardBaseV411();const details=document.querySelector('#tab-game .game-legend');if(details&&!details.querySelector('[data-v411-luck]'))details.insertAdjacentHTML('beforeend','<span data-v411-luck>⚠️ bad luck (leader pressure)</span><span data-v411-luck>🍀 lucky (comeback)</span>')};
+
+// Run the compatibility migration for the current in-memory data immediately after this code loads.
+try{ensureGameContentV411();renderWeeklyProgressV411();renderWeeklyQuestV411()}catch(error){console.warn('v4.11 weekly upgrade will retry after data load',error)}
 </script>
 </body></html>
