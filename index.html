@@ -268,6 +268,24 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 @media(max-width:720px){.board-cycle-chip{font-size:.61rem;padding:3px 6px}.game-track-home .game-tile{flex-basis:48px;height:50px}.game-track-home .game-tile .tile-icon{font-size:1rem}}
 </style>
 
+<style>
+/* PhDone v4.13 minigame + dice presentation */
+.dice-overlay-v413{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:24px;background:rgba(17,15,31,.74);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:opacity .16s ease}
+.dice-overlay-v413.show{opacity:1;pointer-events:auto}
+.dice-overlay-card-v413{width:min(780px,92vw);min-height:min(62vh,620px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;border-radius:40px;background:radial-gradient(circle at 50% 18%,rgba(126,96,255,.34),transparent 42%),linear-gradient(160deg,#191725,#0e0d15);border:1px solid rgba(255,255,255,.15);box-shadow:0 40px 120px rgba(0,0,0,.5);color:#fff}
+.dice-overlay-kicker-v413{font-size:.82rem;font-weight:900;letter-spacing:.24em;color:#bdb3ff}
+.dice-overlay-stage-v413{display:flex;align-items:center;justify-content:center;gap:24px;min-height:220px;flex-wrap:wrap}
+.big-die-v413{display:grid;place-items:center;width:clamp(150px,23vw,245px);height:clamp(150px,23vw,245px);font-size:clamp(7.5rem,18vw,13rem);line-height:1;filter:drop-shadow(0 28px 32px rgba(0,0,0,.42));transition:transform .07s ease}
+.big-die-v413.landed{animation:dice-land-v413 .48s cubic-bezier(.18,.9,.32,1.25)}
+.dice-overlay-text-v413{font-size:clamp(1.35rem,3vw,2.1rem);font-weight:950;letter-spacing:.03em}
+@keyframes dice-land-v413{0%{transform:translateY(-38px) scale(1.18) rotate(-16deg)}55%{transform:translateY(12px) scale(.92) rotate(6deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+.timing-v413{text-align:center;display:grid;gap:14px;justify-items:center;padding:8px 0 4px}.timing-target-v413{display:inline-flex;align-items:center;gap:12px;padding:10px 18px;border-radius:18px;background:#f0ecff;border:1px solid #d8d0ff;color:#4b35b7}.timing-target-v413 span{font-size:.72rem;font-weight:900;letter-spacing:.15em}.timing-target-v413 strong{font-size:1.65rem}.timing-clock-v413{min-width:220px}.timing-hidden-v413{letter-spacing:.12em;color:#68627d}.timing-stop-v413{min-width:190px;padding:15px 24px;font-size:1.05rem}.timing-stop-v413.danger-stop{background:linear-gradient(135deg,#fb5555,#d92953)}
+.memory-v413,.reverse-v413,.mash-v413{width:min(700px,100%);margin:auto}.memory-hud-v413{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.memory-hud-v413 span{display:inline-flex;gap:5px;align-items:center;padding:7px 10px;border-radius:999px;background:#f2f0f8;color:#69627a;font-size:.74rem;font-weight:800}.memory-flash-v413{min-height:92px;display:flex;align-items:center;justify-content:center;padding:14px;text-align:center;font-size:clamp(1.5rem,5vw,2.6rem);font-weight:900;letter-spacing:.08em}.memory-options-v413{display:grid;grid-template-columns:1fr 1fr;gap:8px}.memory-options-v413 button{min-height:54px;font-size:1.1rem}.memory-clock-v413,.reverse-clock-v413{height:7px;background:#ece9f5;border-radius:999px;overflow:hidden;margin:10px 0}.memory-clock-v413 span,.reverse-clock-v413 span{display:block;height:100%;width:100%;background:linear-gradient(90deg,#16aa82,#704cff);border-radius:inherit}
+.mash-v413{text-align:center}.mash-score-v413{display:grid;gap:2px}.mash-score-v413 span{font-size:.72rem;letter-spacing:.14em;font-weight:900;color:#77718a}.mash-score-v413 strong{font-size:3.3rem}.mash-buttons-v413{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.mash-buttons-v413 button{min-height:120px;font-size:1.35rem;font-weight:950;border:2px solid #ddd6ff}.mash-hit-v413{animation:mash-hit-v413 .12s ease}@keyframes mash-hit-v413{50%{transform:scale(.94);background:#dbd2ff}}
+.reverse-prompt-v413{text-align:center;display:grid;gap:2px}.reverse-prompt-v413 strong{font-size:clamp(5rem,18vw,9rem);line-height:1}.reverse-pad-v413{display:grid;grid-template-columns:repeat(3,minmax(72px,1fr));gap:8px;width:min(390px,100%);margin:10px auto}.reverse-pad-v413 button{min-height:74px;border:0;border-radius:18px;background:#eeeaff;color:#4d3cc4;font-size:2rem;font-weight:950}.reverse-pad-v413 button[data-dir="U"]{grid-column:2}.reverse-pad-v413 button[data-dir="L"]{grid-column:1;grid-row:2}.reverse-pad-v413 button[data-dir="D"]{grid-column:2;grid-row:2}.reverse-pad-v413 button[data-dir="R"]{grid-column:3;grid-row:2}
+@media(max-width:600px){.dice-overlay-card-v413{min-height:56vh;border-radius:28px}.dice-overlay-stage-v413{gap:8px;min-height:180px}.big-die-v413{width:128px;height:128px;font-size:7rem}.memory-options-v413{grid-template-columns:1fr}.mash-buttons-v413 button{min-height:94px}.reverse-pad-v413 button{min-height:66px}}
+
+</style>
 </head>
 <body>
 <section id="loginScreen" class="login-screen"><form id="loginForm" class="login-card"><h1>🎓 PhDone</h1><p id="authIntro" class="muted">Sign in to your synced productivity game.</p><div class="auth-switch"><button id="signInMode" type="button" class="active" onclick="setAuthMode('signin')">Sign in</button><button id="signUpMode" type="button" class="secondary" onclick="setAuthMode('signup')">Create account</button></div><input id="loginName" class="hidden" type="text" autocomplete="name" maxlength="80" placeholder="Display name"><input id="loginEmail" type="email" autocomplete="email" placeholder="Email address" required><input id="loginPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Password" required><div id="loginError" class="login-error" aria-live="polite"></div><button id="loginButton" class="primary" style="width:100%">🔓 Sign in</button><button id="forgotPasswordButton" type="button" class="ghost" style="width:100%;margin-top:8px" onclick="sendPasswordReset()">Forgot password?</button><p class="muted small" style="margin-top:14px">Each account has its own private data. Administrators can see account summaries through the separate dashboard.</p></form></section>
@@ -1824,6 +1842,216 @@ async function handleBoardCycleTickV412(){
   if(longGame.me){renderGameBoard();renderGameTrack($('homeGameTrack'),true);document.querySelectorAll('.game-tile').forEach(t=>{t.classList.add('board-shift-pulse');setTimeout(()=>t.classList.remove('board-shift-pulse'),850)});await loadLongGameState(false)}
 }
 setInterval(()=>{handleBoardCycleTickV412().catch(error=>console.warn('Board cycle refresh skipped',error))},30000);
+
+
+// PhDone v4.13 - harder party minigames + dramatic dice ----------------------
+const V413_MINIGAME_NAMES={
+  timing:'Perfect Timing',memory:'Flash Memory',quicktap:'Quick Pick',mash:'Mash Rush',reverse:'Reverse Rush'
+};
+let miniV413Timeouts=[];
+let miniV413Intervals=[];
+function v413Timeout(fn,ms){const id=setTimeout(()=>{miniV413Timeouts=miniV413Timeouts.filter(x=>x!==id);fn()},ms);miniV413Timeouts.push(id);return id}
+function v413Interval(fn,ms){const id=setInterval(fn,ms);miniV413Intervals.push(id);return id}
+function clearMiniV413Timers(){for(const id of miniV413Timeouts)clearTimeout(id);for(const id of miniV413Intervals)clearInterval(id);miniV413Timeouts=[];miniV413Intervals=[]}
+const closeGameMinigameBaseV413=closeGameMinigame;
+closeGameMinigame=function(){clearMiniV413Timers();closeGameMinigameBaseV413()};
+
+function v413Seed(c=miniGameContext){return String(c?.seed||c?.eventId||c?.duelId||'phdone')}
+function timingTargetV413(c=miniGameContext){
+  const idx=seededMiniIndex(v413Seed(c)+':perfect-target',351); // 4.75 - 8.25 inclusive
+  return Math.round((4.75+idx/100)*100)/100;
+}
+function timingTargetTextV413(c=miniGameContext){return timingTargetV413(c).toFixed(2)}
+
+const launchSoloMinigameBaseV413=launchSoloMinigame;
+launchSoloMinigame=function(eventId,gameType,encounterName=''){
+  const live=longGame.events?.find(e=>String(e.id)===String(eventId));
+  return launchSoloMinigameBaseV413(eventId,live?.detail?.game_type||gameType,encounterName||live?.detail?.encounter_name||'')
+};
+
+duelGameName=function(type){return V413_MINIGAME_NAMES[type]||'Duel'};
+duelScoreText=function(type,value){
+  if(value==null)return '—';
+  if(type==='timing')return `${Math.round(Number(value))} ms from target`;
+  if(type==='quicktap')return `${Number(value).toFixed(1)} endurance pts`;
+  if(type==='mash')return `${Math.round(Number(value))} alternating taps`;
+  return `${Number(value).toFixed(1)} pts`;
+};
+
+renderGamePendingSolo=function(){
+  const el=$('gameSoloPending'),wrap=$('gameSoloWrap');if(!el||!wrap)return;
+  const pending=longGame.events.filter(e=>e.user_id===currentUser.id&&e.event_type==='minigame'&&!e.resolved);
+  wrap.classList.toggle('hidden',!pending.length);
+  el.innerHTML=pending.map(e=>{const name=V413_MINIGAME_NAMES[e.detail?.game_type]||'Minigame',enc=e.detail?.encounter_name;return `<div class="game-duel"><div class="row"><strong>${enc?'NPC encounter: '+escapeHtml(enc):'Solo: '+escapeHtml(name)}</strong><button class="secondary right" onclick="launchSoloMinigame('${e.id}','${escapeHtml(e.detail?.game_type||'timing')}','${escapeHtml(enc||'')}')">Play</button></div></div>`}).join('')
+};
+
+renderMinigameStart=function(){
+  clearMiniV413Timers();
+  const c=miniGameContext;if(!c)return;const duel=c.mode==='duel',dialog=$('gameMinigameDialog');
+  $('gameMiniKicker').textContent=c.encounterName?`NPC ENCOUNTER - ${c.encounterName}`:duel?'ASYNCHRONOUS DUEL':'SOLO MINIGAME';
+  $('gameMiniResult').classList.add('hidden');$('gameMiniDone').classList.add('hidden');$('gameMiniCloseTop').disabled=false;
+  const type=c.gameType||'timing';
+  if(type==='timing'){
+    const target=timingTargetTextV413(c);
+    $('gameMiniTitle').textContent=duel?'Perfect Timing Duel':c.encounterName?`Beat ${c.encounterName}: Perfect Timing`:'Perfect Timing';
+    $('gameMiniHelp').innerHTML=`Stop the clock at <strong>${target} seconds</strong>. The live clock is visible only until <strong>3.00 seconds</strong>, then you must judge the rest yourself.${duel?' Both players have exactly the same target; closest time wins.':''}`;
+    $('gameMiniArena').innerHTML=`<div class="timing-v413"><div class="timing-target-v413"><span>TARGET</span><strong>${target}s</strong></div><div id="miniTimingDisplay" class="mini-big timing-clock-v413">0.00</div><div id="miniTimingHintV413" class="muted small">You will lose sight of the clock after 3.00s.</div><button id="miniTimingButton" class="primary timing-stop-v413">Start</button></div>`;
+    $('miniTimingButton').onclick=startTimingMinigame;
+  }else if(type==='memory'){
+    $('gameMiniTitle').textContent=duel?'Flash Memory Duel':'Flash Memory';
+    $('gameMiniHelp').textContent=duel?'Survive the same rapid memory rounds as your opponent. Two mistakes end the run; higher score wins.':'Rapid-fire memory: the sequences grow while the display and answer window shrink. Two mistakes end the run.';
+  }else if(type==='quicktap'){
+    $('gameMiniTitle').textContent=duel?'Quick Pick Duel — Endless':'Quick Pick — Endless';
+    $('gameMiniHelp').textContent=duel?'Both players face the same seeded escalating visual-search run. Three misses end it; higher endurance score wins.':'Endless escalating visual search. The grid grows, the clock shrinks, and three misses end the run.';
+  }else if(type==='mash'){
+    $('gameMiniTitle').textContent=duel?'Mash Rush Duel':'Mash Rush';
+    $('gameMiniHelp').textContent='Alternate LEFT and RIGHT as quickly as you can for 6 seconds. Repeating the same side does not count. Higher total wins.';
+  }else if(type==='reverse'){
+    $('gameMiniTitle').textContent=duel?'Reverse Rush Duel':'Reverse Rush';
+    $('gameMiniHelp').textContent='An arrow appears. Tap the OPPOSITE direction before the shrinking timer expires. Three mistakes end the run.';
+  }
+  safeShowModal(dialog);
+  if(type==='memory')v413Timeout(()=>startMemoryMinigame(),90);
+  else if(type==='quicktap')v413Timeout(()=>startQuickTapMinigame(),90);
+  else if(type==='mash')v413Timeout(()=>startMashRushV413(),90);
+  else if(type==='reverse')v413Timeout(()=>startReverseRushV413(),90)
+};
+
+startTimingMinigame=function(){
+  const c=miniGameContext,button=$('miniTimingButton'),display=$('miniTimingDisplay'),hint=$('miniTimingHintV413');if(!c||!button||!display)return;
+  const target=timingTargetV413(c);miniTimerStart=performance.now();button.textContent='STOP';button.classList.add('danger-stop');
+  button.onclick=async()=>{
+    const elapsed=(performance.now()-miniTimerStart)/1000;if(miniTimerRAF)cancelAnimationFrame(miniTimerRAF);miniTimerRAF=null;
+    display.classList.remove('timing-hidden-v413');display.textContent=elapsed.toFixed(2);if(hint)hint.innerHTML=`You stopped at <strong>${elapsed.toFixed(2)}s</strong> · target ${target.toFixed(2)}s`;
+    button.disabled=true;const errorMs=Math.abs(elapsed-target)*1000;
+    if(c.mode==='duel')await submitGameDuel(errorMs);else await submitSoloMinigame(Math.max(0,Math.min(100,100-errorMs/20)))
+  };
+  const tick=()=>{
+    if(button.disabled||miniGameContext!==c)return;const elapsed=(performance.now()-miniTimerStart)/1000;
+    if(elapsed<3){display.textContent=elapsed.toFixed(2)}else if(!display.classList.contains('timing-hidden-v413')){display.textContent='•••';display.classList.add('timing-hidden-v413');if(hint)hint.textContent='Clock hidden — trust your sense of time.'}
+    miniTimerRAF=requestAnimationFrame(tick)
+  };tick()
+};
+
+startMemoryMinigame=function(){
+  const c=miniGameContext;if(!c)return;clearMiniV413Timers();
+  const seed=v413Seed(c),icons=['🌙','📚','⚡','🎯','🧠','✨','🔷','🌿'];
+  let round=0,lives=2,hits=0,streak=0,best=0,totalReaction=0,ended=false,answerTimer=null;
+  const arena=$('gameMiniArena');
+  arena.innerHTML=`<div class="memory-v413"><div class="memory-hud-v413"><span>ROUND <strong id="memRoundV413">1</strong></span><span>SCORE <strong id="memHitsV413">0</strong></span><span>LIVES <strong id="memLivesV413">♥ ♥</strong></span></div><div id="memoryFlashV413" class="memory-flash-v413"></div><div id="memoryChoicesV413" class="memory-options memory-options-v413"></div><div id="memoryClockV413" class="memory-clock-v413"><span></span></div><div id="memoryFeedbackV413" class="muted tiny">Get ready.</div></div>`;
+  const updateHud=()=>{if($('memRoundV413'))$('memRoundV413').textContent=String(Math.max(1,round));if($('memHitsV413'))$('memHitsV413').textContent=String(hits);if($('memLivesV413'))$('memLivesV413').textContent='♥ '.repeat(lives).trim()||'—'};
+  const finish=async(reason)=>{if(ended)return;ended=true;if(answerTimer)clearTimeout(answerTimer);const avg=hits?totalReaction/hits:1800,score=Math.max(0,Math.min(100,hits*7+best*2+Math.max(0,18-(avg-450)/70)));arena.innerHTML=`<div class="quick-pick-summary"><div class="mini-big">${hits}</div><strong>rounds cleared</strong><div class="muted small" style="margin-top:8px">Best streak ${best}${hits?` · avg answer ${Math.round(avg)} ms`:''}</div><div class="pill neutral" style="margin-top:10px">${escapeHtml(reason)}</div></div>`;c.mode==='duel'?await submitGameDuel(score):await submitSoloMinigame(score)};
+  const loseLife=(msg)=>{if(ended)return;lives--;streak=0;updateHud();const f=$('memoryFeedbackV413');if(f)f.textContent=msg;if(lives<=0){v413Timeout(()=>finish('Memory overloaded'),180);return}v413Timeout(drawRound,220)};
+  const drawRound=()=>{
+    if(ended||miniGameContext!==c)return;round++;updateHud();
+    const len=Math.min(9,3+round),showMs=Math.max(380,1040-(round-1)*80),answerMs=Math.max(650,1450-(round-1)*75);
+    const seq=Array.from({length:len},(_,i)=>icons[seededMiniIndex(`${seed}:mem:${round}:${i}`,icons.length)]),correct=seq.join(' '),options=[correct];
+    for(let k=1;k<4;k++){const alt=[...seq],idx=seededMiniIndex(`${seed}:mem:${round}:x:${k}`,len),step=1+seededMiniIndex(`${seed}:mem:${round}:s:${k}`,icons.length-1);alt[idx]=icons[(icons.indexOf(alt[idx])+step)%icons.length];options.push(alt.join(' '))}
+    options.sort((a,b)=>seededMiniIndex(`${seed}:mem:${round}:sort:${a}`,1000)-seededMiniIndex(`${seed}:mem:${round}:sort:${b}`,1000));
+    const flash=$('memoryFlashV413'),choices=$('memoryChoicesV413'),clock=$('memoryClockV413')?.firstElementChild,feedback=$('memoryFeedbackV413');if(!flash||!choices)return;
+    flash.textContent=correct;flash.classList.remove('hidden');choices.innerHTML='';if(clock)clock.style.width='100%';if(feedback)feedback.textContent=`${len} symbols · ${Math.round(showMs)} ms glimpse`;
+    v413Timeout(()=>{
+      if(ended||miniGameContext!==c)return;flash.textContent=Array(len).fill('•').join(' ');const started=performance.now();choices.innerHTML=options.map(o=>`<button type="button" class="secondary">${o}</button>`).join('');
+      if(clock){clock.style.transition='none';clock.style.width='100%';void clock.offsetWidth;clock.style.transition=`width ${answerMs}ms linear`;clock.style.width='0%'}
+      answerTimer=v413Timeout(()=>{choices.querySelectorAll('button').forEach(b=>b.disabled=true);loseLife('Too slow.')},answerMs);
+      [...choices.querySelectorAll('button')].forEach(b=>b.onclick=()=>{
+        if(ended)return;if(answerTimer)clearTimeout(answerTimer);answerTimer=null;choices.querySelectorAll('button').forEach(x=>x.disabled=true);const ok=b.textContent.trim()===correct,response=performance.now()-started;
+        if(ok){hits++;streak++;best=Math.max(best,streak);totalReaction+=response;updateHud();if(feedback)feedback.textContent=`Correct · ${Math.round(response)} ms`;if(round>=12){v413Timeout(()=>finish('Perfect 12-round run'),180)}else v413Timeout(drawRound,170)}else loseLife('Wrong sequence.')
+      })
+    },showMs)
+  };
+  round=0;updateHud();drawRound()
+};
+
+function startMashRushV413(){
+  const c=miniGameContext;if(!c)return;clearMiniV413Timers();let running=false,ended=false,count=0,last=null,start=0,raf=null;
+  const arena=$('gameMiniArena');arena.innerHTML=`<div class="mash-v413"><div class="mash-score-v413"><span>ALTERNATING TAPS</span><strong id="mashCountV413">0</strong></div><div id="mashTimeV413" class="mini-big">6.0</div><div class="mash-buttons-v413"><button id="mashLeftV413" class="secondary">◀ LEFT</button><button id="mashRightV413" class="secondary">RIGHT ▶</button></div><button id="mashStartV413" class="primary">Start 6-second rush</button><div id="mashFeedbackV413" class="muted tiny">You must alternate sides.</div></div>`;
+  const finish=async()=>{if(ended)return;ended=true;running=false;if(raf)cancelAnimationFrame(raf);$('mashLeftV413').disabled=true;$('mashRightV413').disabled=true;$('mashStartV413').disabled=true;const soloScore=Math.min(100,count*2.4);$('mashFeedbackV413').textContent=`Finished with ${count} valid alternating taps.`;c.mode==='duel'?await submitGameDuel(count):await submitSoloMinigame(soloScore)};
+  const tap=side=>{if(!running||ended)return;if(last===side){$('mashFeedbackV413').textContent='Alternate sides — repeat tap ignored.';return}last=side;count++;$('mashCountV413').textContent=String(count);const b=$(side==='L'?'mashLeftV413':'mashRightV413');b.classList.remove('mash-hit-v413');void b.offsetWidth;b.classList.add('mash-hit-v413')};
+  $('mashLeftV413').onclick=()=>tap('L');$('mashRightV413').onclick=()=>tap('R');
+  $('mashStartV413').onclick=()=>{if(running)return;running=true;start=performance.now();$('mashStartV413').classList.add('hidden');const tick=()=>{if(!running||ended)return;const left=Math.max(0,6-(performance.now()-start)/1000);$('mashTimeV413').textContent=left.toFixed(1);if(left<=0){finish();return}raf=requestAnimationFrame(tick)};tick()}
+}
+
+function startReverseRushV413(){
+  const c=miniGameContext;if(!c)return;
+  clearMiniV413Timers();
+  const seed=v413Seed(c),dirs=[{k:'U',icon:'↑',op:'D'},{k:'R',icon:'→',op:'L'},{k:'D',icon:'↓',op:'U'},{k:'L',icon:'←',op:'R'}];
+  let round=0,lives=3,hits=0,streak=0,best=0,totalReaction=0,ended=false,roundTimer=null;
+  const arena=$('gameMiniArena');
+  arena.innerHTML=`<div class="reverse-v413"><div class="memory-hud-v413"><span>ROUND <strong id="revRoundV413">1</strong></span><span>CORRECT <strong id="revHitsV413">0</strong></span><span>LIVES <strong id="revLivesV413">♥ ♥ ♥</strong></span></div><div class="reverse-prompt-v413"><span class="muted tiny">TAP THE OPPOSITE</span><strong id="revArrowV413">↑</strong></div><div class="reverse-clock-v413"><span id="revClockV413"></span></div><div class="reverse-pad-v413"><button data-dir="U">↑</button><button data-dir="L">←</button><button data-dir="D">↓</button><button data-dir="R">→</button></div><div id="revFeedbackV413" class="muted tiny">React quickly.</div></div>`;
+  const update=()=>{
+    if($('revRoundV413'))$('revRoundV413').textContent=String(Math.max(1,round));
+    if($('revHitsV413'))$('revHitsV413').textContent=String(hits);
+    if($('revLivesV413'))$('revLivesV413').textContent='♥ '.repeat(lives).trim()||'—';
+  };
+  const finish=async(reason)=>{
+    if(ended)return;ended=true;if(roundTimer)clearTimeout(roundTimer);
+    const avg=hits?totalReaction/hits:1500,score=Math.max(0,Math.min(100,hits*7+best*2+Math.max(0,20-(avg-350)/55)));
+    arena.querySelectorAll('button').forEach(b=>b.disabled=true);if($('revFeedbackV413'))$('revFeedbackV413').textContent=reason;
+    if(c.mode==='duel')await submitGameDuel(score);else await submitSoloMinigame(score);
+  };
+  const miss=msg=>{
+    if(ended)return;lives--;streak=0;update();if($('revFeedbackV413'))$('revFeedbackV413').textContent=msg;
+    if(lives<=0)v413Timeout(()=>finish('Three mistakes — run over.'),180);else v413Timeout(draw,180);
+  };
+  const draw=()=>{
+    if(ended||miniGameContext!==c)return;round++;update();
+    const d=dirs[seededMiniIndex(`${seed}:reverse:${round}`,dirs.length)],limit=Math.max(430,1250-(round-1)*65),started=performance.now();
+    $('revArrowV413').textContent=d.icon;if($('revFeedbackV413'))$('revFeedbackV413').textContent=`Round ${round} · ${limit} ms`;
+    const bar=$('revClockV413');if(bar){bar.style.transition='none';bar.style.width='100%';void bar.offsetWidth;bar.style.transition=`width ${limit}ms linear`;bar.style.width='0%'}
+    if(roundTimer)clearTimeout(roundTimer);roundTimer=v413Timeout(()=>miss('Too slow.'),limit);
+    arena.querySelectorAll('[data-dir]').forEach(b=>{
+      b.disabled=false;
+      b.onclick=()=>{
+        if(ended)return;if(roundTimer)clearTimeout(roundTimer);roundTimer=null;arena.querySelectorAll('[data-dir]').forEach(x=>x.disabled=true);
+        const ok=b.dataset.dir===d.op,response=performance.now()-started;
+        if(ok){
+          hits++;streak++;best=Math.max(best,streak);totalReaction+=response;update();if($('revFeedbackV413'))$('revFeedbackV413').textContent=`Correct · ${Math.round(response)} ms`;
+          if(round>=14)v413Timeout(()=>finish('Cleared all 14 rounds.'),160);else v413Timeout(draw,140);
+        }else miss('Wrong direction.');
+      };
+    });
+  };
+  round=0;update();draw();
+}
+
+submitSoloMinigame=async function(score){
+  if(!miniGameContext||miniGameContext.submitted)return;miniGameContext.submitted=true;score=Math.max(0,Math.min(100,Number(score)||0));
+  try{
+    const{data:reward,error}=await client.rpc('phdone_game_finish_minigame',{p_event_id:miniGameContext.eventId,p_score:score});if(error)throw error;
+    if(reward?.kind&&reward.kind!=='none')await handleLongGameReward(reward,miniGameContext.eventId);
+    const rewardText=reward?.text||(reward?.kind==='item'?`Won ${GAME_ITEMS[reward.item]?.name||reward.item}`:'No prize this time');
+    $('gameMiniResult').innerHTML=`Score <strong>${Math.round(score)}</strong>/100 · ${escapeHtml(rewardText)}`;$('gameMiniResult').classList.remove('hidden');$('gameMiniDone').classList.remove('hidden');await loadLongGameState(false)
+  }catch(error){$('gameMiniResult').textContent=error.message;$('gameMiniResult').classList.remove('hidden');$('gameMiniDone').classList.remove('hidden')}
+};
+submitGameDuel=async function(score){
+  if(!miniGameContext||miniGameContext.submitted)return;miniGameContext.submitted=true;
+  try{
+    const type=miniGameContext.gameType||'timing',{data:result,error}=await client.rpc('phdone_game_submit_duel',{p_duel_id:miniGameContext.duelId,p_score:Number(score)});if(error)throw error;
+    const scoreText=duelScoreText(type,score);let text='';
+    if(result.status==='waiting')text=`Your ${scoreText} is locked. Waiting for the other player.`;
+    else if(result.status==='complete'){
+      const won=result.winner_id===currentUser.id,tie=!result.winner_id,reward=result.reward||{};
+      const rewardText=reward.kind==='item'?`Rare prize: ${GAME_ITEMS[reward.item]?.name||'item'}`:reward.kind==='dice'?reward.text||'+1 die':reward.text||'No prize';
+      text=tie?`Exact draw — no prize. Your ${scoreText}.`:won?`You won! ${rewardText}.`:`Duel complete — the other player won. Your ${scoreText}.`;
+    }else text='Duel expired.';
+    $('gameMiniResult').innerHTML=`<strong>${escapeHtml(text)}</strong>`;$('gameMiniResult').classList.remove('hidden');$('gameMiniDone').classList.remove('hidden');await loadLongGameState(false)
+  }catch(error){$('gameMiniResult').textContent=error.message;$('gameMiniResult').classList.remove('hidden');$('gameMiniDone').classList.remove('hidden')}
+};
+
+function ensureDiceOverlayV413(){
+  let el=$('diceRollOverlayV413');if(el)return el;el=document.createElement('div');el.id='diceRollOverlayV413';el.className='dice-overlay-v413';el.setAttribute('aria-live','polite');el.innerHTML=`<div class="dice-overlay-card-v413"><div class="dice-overlay-kicker-v413">THE LONG GAME</div><div id="diceOverlayStageV413" class="dice-overlay-stage-v413"><span>⚄</span></div><div id="diceOverlayTextV413" class="dice-overlay-text-v413">ROLLING...</div></div>`;document.body.appendChild(el);return el
+}
+animateGameDice=async function(rolls=[]){
+  const seq=Array.isArray(rolls)&&rolls.length?rolls.map(x=>Math.max(1,Math.min(6,Number(x)||1))):[1],overlay=ensureDiceOverlayV413(),stage=$('diceOverlayStageV413'),text=$('diceOverlayTextV413'),smallFaces=[$('gameDiceFace'),$('homeGameDiceFace')].filter(Boolean);
+  overlay.classList.add('show');stage.innerHTML=seq.map(()=>'<span class="big-die-v413">⚄</span>').join('');const dice=[...stage.querySelectorAll('.big-die-v413')];text.textContent='ROLLING...';smallFaces.forEach(f=>f.classList.add('rolling'));
+  for(let frame=0;frame<15;frame++){dice.forEach((d,i)=>{d.textContent=DIE_FACES[Math.floor(Math.random()*6)];d.style.transform=`rotate(${(frame*73+i*37)%360}deg) scale(${frame%2?1.08:.94})`});if(!motionReduced())await waitMs(45+frame*3)}
+  dice.forEach((d,i)=>{d.textContent=DIE_FACES[seq[i]-1];d.style.transform='rotate(0deg) scale(1)';d.classList.add('landed')});smallFaces.forEach(f=>{f.textContent=DIE_FACES[seq.at(-1)-1];f.classList.remove('rolling')});text.textContent=seq.length===1?`YOU ROLLED ${seq[0]}`:`ROLLS: ${seq.join(' · ')}`;if(!motionReduced())await waitMs(720);overlay.classList.remove('show');dice.forEach(d=>d.classList.remove('landed'))
+};
+
+// Make new duel and minigame types visible anywhere older copy tables are used.
+const renderGameDuelsBaseV413=renderGameDuels;
+renderGameDuels=function(){renderGameDuelsBaseV413()};
 
 </script>
 </body></html>
