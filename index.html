@@ -496,7 +496,29 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 <dialog id="taskCelebrationDialog"><div class="modal" style="text-align:center"><div style="font-size:3.2rem">✅</div><div id="taskStickerStatus" class="sticker-status small hidden" aria-live="polite"></div><img id="taskStickerImage" class="celebration-image hidden" alt="Encouragement sticker"><div id="taskStickerCaption" class="celebration-caption hidden"></div><h2>Task completed!</h2><p class="muted">Your reward and XP have been added.</p><button class="primary" style="margin-top:14px" onclick="taskCelebrationDialog.close()">Keep going ✨</button></div></dialog>
 
 <dialog id="boardRewardDialog"><div class="modal" style="text-align:center"><div class="board-reward-kicker">THE LONG GAME</div><div id="boardRewardIcon" class="board-reward-icon">🎁</div><h2 id="boardRewardTitle" style="margin-top:8px">Reward collected</h2><p id="boardRewardText" class="muted" style="font-size:1rem;line-height:1.45;margin-top:8px"></p><div class="board-reward-actions"><button type="button" class="ghost" onclick="boardRewardDialog.close()">Keep playing</button><button id="boardRewardOpenButton" type="button" class="primary hidden" onclick="boardRewardDialog.close();openMysteryBox()">Open Mystery Box</button></div></div></dialog>
+
+<dialog id="habitHistoryDialog"><div class="modal habit-history-modal"><div class="section-head"><div><div class="label">ACTIVITY RECORD</div><h2 id="habitHistoryTitle">Habit history</h2><p id="habitHistorySubtitle" class="muted small"></p></div><button type="button" class="ghost" onclick="habitHistoryDialog.close()">&#10005;</button></div><div id="habitHistorySummary" class="habit-history-summary"></div><div id="habitHistoryList" class="habit-history-list"></div><div class="row wrap" style="margin-top:14px"><button id="habitHistoryAddButton" type="button" class="secondary">+ Add record</button><button type="button" class="ghost right" onclick="habitHistoryDialog.close()">Close</button></div></div></dialog>
+
 <div id="confetti" class="confetti"></div>
+
+
+<style id="v415-habit-history-style">
+.habit-date-line{margin-top:9px;padding:8px 10px;border-radius:11px;background:#f8f7ff;border:1px solid #ece9f7;color:var(--muted);font-size:.82rem;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.habit-date-line strong{color:var(--text)}
+.habit-history-modal{width:min(760px,94vw)}
+.habit-history-summary{padding:12px 13px;border-radius:14px;background:#f8f7ff;border:1px solid #e8e4f5;margin:12px 0}
+.habit-history-list{display:grid;gap:8px;max-height:min(58vh,560px);overflow:auto;padding-right:2px}
+.habit-history-row{display:grid;grid-template-columns:minmax(130px,.85fr) minmax(0,1.8fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fff}
+.habit-history-row.current{background:#f0fdf7;border-color:#c8eedc}
+.habit-history-row .history-date{font-weight:850}
+.habit-history-row .history-detail{min-width:0}
+.habit-history-row .history-detail small{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.habit-history-actions{display:flex;gap:4px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.habit-history-actions button{padding:7px 9px}
+.habit-history-empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+.habit-history-claim{margin-top:8px;font-size:.78rem;color:var(--muted)}
+@media(max-width:640px){.habit-history-row{grid-template-columns:1fr auto}.habit-history-row .history-detail{grid-column:1 / -1}.habit-history-actions{grid-column:2;grid-row:1;align-self:start}.habit-date-line{align-items:flex-start}}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -2113,5 +2135,119 @@ renderTrends=function(){if(!$('trendKpis'))return;document.querySelectorAll('#tr
 const renderBaseV414=render;
 render=function(){renderBaseV414();ensureUsdOptionsV414();renderFinance();renderTrends()};
 try{ensureUsdOptionsV414()}catch{}
+
+// PhDone v4.15 - dated habit and streak history -----------------------------
+let habitHistoryContextV415=null;
+let habitHistoryReturnV415=null;
+
+function displayDateTimeV415(value){
+  if(!value)return 'No date';
+  const d=new Date(value);if(Number.isNaN(d.getTime()))return String(value);
+  return d.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function displayCountV415(value){const n=Number(value||0);return Number.isInteger(n)?String(n):String(Math.round(n*100)/100)}
+function sortedHabitLogsV415(h){return [...normalizeHabitLogs(h?.history)].sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')))}
+function sortedRelapsesV415(h,ascending=false){const rows=[...normalizeRelapses(h?.relapseHistory)].sort((a,b)=>new Date(a.at)-new Date(b.at));return ascending?rows:rows.reverse()}
+function streakAnchorV415(h){
+  const rows=sortedRelapsesV415(h,true),fromFirst=rows[0]?.previousStartedAt;
+  return h?.streakInitialStartedAt||fromFirst||h?.abstinenceStartedAt||h?.started||new Date().toISOString();
+}
+function rebuildRelapseChainV415(h){
+  if(!h)return[];let previous=streakAnchorV415(h);const rows=sortedRelapsesV415(h,true);
+  h.streakInitialStartedAt=h.streakInitialStartedAt||rows[0]?.previousStartedAt||previous;
+  for(const r of rows){const at=new Date(r.at);const prev=new Date(previous);r.previousStartedAt=previous;r.durationDays=Math.max(0,(at.getTime()-prev.getTime())/86400000);previous=r.at}
+  h.relapseHistory=rows;return rows;
+}
+
+const normalizeDataBaseV415=normalizeData;
+normalizeData=function(v){
+  const d=normalizeDataBaseV415(v);d.version=19;
+  for(const h of d.habits||[]){
+    h.history=normalizeHabitLogs(h.history);
+    h.relapseHistory=normalizeRelapses(h.relapseHistory);
+    if((h.mode||'regular')==='abstinence'){
+      const first=[...h.relapseHistory].sort((a,b)=>new Date(a.at)-new Date(b.at))[0];
+      h.streakInitialStartedAt=h.streakInitialStartedAt||first?.previousStartedAt||h.abstinenceStartedAt||h.started||new Date().toISOString();
+      rebuildRelapseChainV415(h)
+    }
+  }
+  return d
+};
+defaultData.version=19;
+
+function openHabitHistoryV415(index){
+  const h=data.habits?.[index];if(!h)return;habitHistoryContextV415={habitIndex:index};renderHabitHistoryDialogV415();safeShowModal($('habitHistoryDialog'))
+}
+function renderHabitHistoryDialogV415(){
+  const index=Number(habitHistoryContextV415?.habitIndex),h=data.habits?.[index],list=$('habitHistoryList'),summary=$('habitHistorySummary'),add=$('habitHistoryAddButton');if(!h||!list||!summary||!add)return;
+  $('habitHistoryTitle').textContent=h.name;$('habitHistorySubtitle').textContent=(h.mode||'regular')==='abstinence'?'Exact streak dates and broken-streak records.':'Every recorded activity entry, with its exact date.';
+  if((h.mode||'regular')==='abstinence'){
+    const relapses=sortedRelapsesV415(h),started=displayDateTimeV415(h.abstinenceStartedAt),claimed=h.cycleClaimedAt?`<div class="habit-history-claim">Milestone reward claimed ${escapeHtml(displayDateTimeV415(h.cycleClaimedAt))}.</div>`:'';
+    summary.innerHTML=`<strong>Current streak started</strong><div style="font-size:1.05rem;font-weight:850;margin-top:3px">${escapeHtml(started)}</div><div class="muted small" style="margin-top:4px">${relapses.length} recorded break${relapses.length===1?'':'s'} kept in history.</div>${claimed}`;
+    list.innerHTML=`<div class="habit-history-row current"><div class="history-date">Current streak</div><div class="history-detail"><strong>${escapeHtml(started)}</strong><small>Edit the habit to correct the current streak start date/time.</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editStreakStartFromHistoryV415(${index})">Edit start</button></div></div>`+(relapses.length?relapses.map(r=>`<div class="habit-history-row"><div class="history-date">${escapeHtml(displayDateTimeV415(r.at))}</div><div class="history-detail"><strong>Broken streak</strong><small>${Number(r.durationDays||0).toFixed(Number(r.durationDays||0)<1?2:1)} days in the previous streak${r.note?` · ${escapeHtml(r.note)}`:''}</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editRelapseFromHistoryV415(${index},'${r.id}')">Edit</button><button type="button" class="ghost" onclick="deleteRelapseV415(${index},'${r.id}')">Delete</button></div></div>`).join(''):'<div class="habit-history-empty">No broken streaks recorded yet.</div>');
+    add.textContent='Record broken streak';add.onclick=()=>{habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openRelapseDialog(index)};
+  }else{
+    const logs=sortedHabitLogsV415(h),cycle=habitCurrentCycle(h),cycleCount=habitCycleTotal(h,cycle);
+    summary.innerHTML=`<strong>${escapeHtml(habitRecurrenceLabel(h))}</strong><div style="margin-top:3px"><strong>${displayCountV415(cycleCount)} / ${displayCountV415(h.target)}</strong> this cycle · ${escapeHtml(displayDate(cycle.start))} to ${escapeHtml(displayDate(cycle.end))}</div><div class="muted small" style="margin-top:4px">${logs.length} individual record${logs.length===1?'':'s'} · ${displayCountV415(habitTotal(h))} total units all time.</div>`;
+    list.innerHTML=logs.length?logs.map(log=>`<div class="habit-history-row"><div class="history-date">${escapeHtml(displayDate(log.date))}</div><div class="history-detail"><strong>${escapeHtml(displayCountV415(log.count))} ${Number(log.count)===1?'unit':'units'}</strong><small>${log.note?escapeHtml(log.note):'No note'}</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editHabitLogFromHistoryV415(${index},'${log.id}')">Edit</button><button type="button" class="ghost" onclick="deleteHabitLogFromHistoryV415(${index},'${log.id}')">Delete</button></div></div>`).join(''):'<div class="habit-history-empty">No activity dates recorded yet.</div>';
+    add.textContent='+ Log activity';add.onclick=()=>{habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openHabitLogDialog(index)};
+  }
+}
+function editHabitLogFromHistoryV415(index,logId){habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openHabitLogDialog(index,logId)}
+function deleteHabitLogFromHistoryV415(index,logId){deleteHabitLog(index,logId);habitHistoryContextV415={habitIndex:index};setTimeout(()=>{if($('habitHistoryDialog')?.open)renderHabitHistoryDialogV415();else openHabitHistoryV415(index)},40)}
+function editStreakStartFromHistoryV415(index){habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openHabitDialog(index)}
+function editRelapseFromHistoryV415(index,relapseId){habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openRelapseDialog(index,relapseId)}
+
+const saveHabitLogBaseV415=saveHabitLog;
+saveHabitLog=function(event){const index=Number($('habitLogDialog')?.dataset.habitIndex);saveHabitLogBaseV415(event);if(habitHistoryReturnV415===index){habitHistoryReturnV415=null;setTimeout(()=>openHabitHistoryV415(index),60)}};
+
+const saveHabitBaseV415=saveHabit;
+saveHabit=function(event){
+  const raw=$('habitDialog')?.dataset.editIndex,index=raw===''?null:Number(raw),returnTo=habitHistoryReturnV415;
+  saveHabitBaseV415(event);
+  const h=index===null?null:data.habits?.[index];if(h&&(h.mode||'regular')==='abstinence'){
+    h.relapseHistory=normalizeRelapses(h.relapseHistory);if(!h.relapseHistory.length)h.streakInitialStartedAt=h.abstinenceStartedAt;rebuildRelapseChainV415(h);save()
+  }
+  if(index!==null&&returnTo===index){habitHistoryReturnV415=null;setTimeout(()=>openHabitHistoryV415(index),60)}
+};
+
+openRelapseDialog=function(index,relapseId=null){
+  const h=data.habits?.[index];if(!h)return;h.relapseHistory=normalizeRelapses(h.relapseHistory);const relapse=relapseId?h.relapseHistory.find(r=>String(r.id)===String(relapseId)):null,dialog=$('relapseDialog');
+  dialog.dataset.habitIndex=String(index);dialog.dataset.relapseId=relapse?.id||'';
+  const title=dialog.querySelector('h2'),button=dialog.querySelector('button.danger');if(title)title.textContent=relapse?'Edit broken-streak record':'Record a broken streak';if(button)button.textContent=relapse?'Save date':'Restart streak';
+  $('relapseHabitName').textContent=relapse?`${h.name} · change the recorded date/time`:`${h.name} · Current streak ${formatStreak(h.abstinenceStartedAt)}`;
+  $('relapseAt').value=localDateTimeValue(relapse?.at||new Date());$('relapseNote').value=relapse?.note||'';safeShowModal(dialog)
+};
+saveRelapse=function(event){
+  event.preventDefault();const dialog=$('relapseDialog'),index=Number(dialog.dataset.habitIndex),relapseId=dialog.dataset.relapseId,h=data.habits?.[index];if(!h)return;
+  const at=new Date($('relapseAt').value);if(Number.isNaN(at.getTime()))return;h.relapseHistory=normalizeRelapses(h.relapseHistory);if(!h.streakInitialStartedAt)h.streakInitialStartedAt=h.relapseHistory[0]?.previousStartedAt||h.abstinenceStartedAt||new Date().toISOString();
+  if(relapseId){
+    const row=h.relapseHistory.find(r=>String(r.id)===String(relapseId));if(!row)return;const oldAt=row.at,wasCurrent=Math.abs(new Date(h.abstinenceStartedAt).getTime()-new Date(oldAt).getTime())<60000;row.at=at.toISOString();row.note=$('relapseNote').value.trim();row.updatedAt=new Date().toISOString();const rebuilt=rebuildRelapseChainV415(h);if(wasCurrent){h.abstinenceStartedAt=rebuilt.length?rebuilt[rebuilt.length-1].at:h.streakInitialStartedAt;h.cycleClaimedAt=null}
+  }else{
+    const previous=h.abstinenceStartedAt||new Date().toISOString();h.relapseHistory.push({id:uid(),at:at.toISOString(),note:$('relapseNote').value.trim(),previousStartedAt:previous,durationDays:Math.max(0,(at.getTime()-new Date(previous).getTime())/86400000),createdAt:new Date().toISOString()});rebuildRelapseChainV415(h);h.abstinenceStartedAt=at.toISOString();h.cycleClaimedAt=null
+  }
+  dialog.close();save();if(habitHistoryReturnV415===index){habitHistoryReturnV415=null;setTimeout(()=>openHabitHistoryV415(index),60)}
+};
+function deleteRelapseV415(index,relapseId){
+  const h=data.habits?.[index];if(!h||!confirm('Delete this broken-streak record?'))return;h.relapseHistory=normalizeRelapses(h.relapseHistory);const row=h.relapseHistory.find(r=>String(r.id)===String(relapseId));if(!row)return;const wasCurrent=Math.abs(new Date(h.abstinenceStartedAt).getTime()-new Date(row.at).getTime())<60000;h.relapseHistory=h.relapseHistory.filter(r=>String(r.id)!==String(relapseId));const rebuilt=rebuildRelapseChainV415(h);if(wasCurrent){h.abstinenceStartedAt=rebuilt.length?rebuilt[rebuilt.length-1].at:h.streakInitialStartedAt;h.cycleClaimedAt=null}save();habitHistoryContextV415={habitIndex:index};setTimeout(()=>{if($('habitHistoryDialog')?.open)renderHabitHistoryDialogV415();else openHabitHistoryV415(index)},40)
+}
+
+renderHabits=function(){
+  if(!data.habits.length){$('habitList').innerHTML='<div class="empty">No habits yet. Create an activity goal or abstinence streak. &#127793;</div>';return}
+  $('habitList').innerHTML=data.habits.map((h,i)=>{
+    const proj=`<span class="pill project-pill">&#128451;&#65039; ${escapeHtml(projectName(h.projectId))}</span>`;
+    if((h.mode||'regular')==='abstinence'){
+      h.relapseHistory=normalizeRelapses(h.relapseHistory);const days=elapsedDays(h.abstinenceStartedAt),target=Math.max(.01,Number(h.abstinenceTargetDays||7)),progress=Math.min(100,days/target*100),ready=days>=target&&!h.cycleClaimedAt,breaks=h.relapseHistory.length;
+      return `<div class="habit"><div class="row"><div><div class="item-title">&#128737;&#65039; ${escapeHtml(h.name)}</div>${proj}<span class="pill good">Abstinence streak</span></div><button class="ghost right" onclick="editHabit(${i})">Edit</button></div><div class="streak-clock ${ready?'streak-safe':''}">${formatStreak(h.abstinenceStartedAt)}</div><div class="muted small">Goal: ${target} day${target===1?'':'s'} · reward ${money(h.reward)}</div><div class="habit-date-line"><span>&#128197;</span><span>Current streak started <strong>${escapeHtml(displayDateTimeV415(h.abstinenceStartedAt))}</strong>${breaks?` · ${breaks} previous break${breaks===1?'':'s'} recorded`:''}</span></div><div class="bar"><div class="fill" style="width:${progress}%"></div></div><div class="row wrap" style="margin-top:10px">${ready?`<button class="primary" onclick="claimAbstinence(${i})">Claim ${money(h.reward)}</button>`:h.cycleClaimedAt?'<span class="success small">Milestone reward claimed</span>':`<span class="muted small">${Math.max(0,target-days).toFixed(days<1?2:1)} days remaining</span>`}<button class="secondary" onclick="openHabitHistoryV415(${i})">&#128197; History</button><button class="danger right" onclick="openRelapseDialog(${i})">I broke the streak</button><button class="ghost" onclick="deleteHabit(${i})">Delete</button></div></div>`
+    }
+    h.history=normalizeHabitLogs(h.history);h.count=habitTotal(h);const cycle=habitCurrentCycle(h),cycleCount=habitCycleTotal(h,cycle),claimed=habitCycleClaimed(h,cycle),progress=Math.min(100,cycleCount/h.target*100),logs=sortedHabitLogsV415(h),latest=logs[0];
+    return `<div class="habit"><div class="row"><div><div class="item-title">${claimed?'&#127941;':'&#128260;'} ${escapeHtml(h.name)}</div>${proj}</div><button class="ghost right" onclick="editHabit(${i})">Edit</button></div><div class="muted small">${displayCountV415(cycleCount)} / ${displayCountV415(h.target)} this cycle · ${habitRecurrenceLabel(h)}</div><div class="habit-date-line"><span>&#128197;</span><span>${latest?`Last recorded <strong>${escapeHtml(displayDate(latest.date))}</strong> · ${escapeHtml(displayCountV415(latest.count))} ${Number(latest.count)===1?'unit':'units'}${logs.length>1?` · ${logs.length} dated entries total`:''}`:'No activity date recorded yet.'}</span></div><div class="bar"><div class="fill" style="width:${progress}%"></div></div><div class="row wrap" style="margin-top:10px"><button class="secondary" onclick="openHabitLogDialog(${i})">+ Log activity</button><button class="secondary" onclick="openHabitHistoryV415(${i})">&#128197; History${logs.length?` (${logs.length})`:''}</button>${cycleCount>=h.target&&!claimed?`<button class="primary" onclick="claimHabit(${i})">Claim ${money(h.reward)}</button>`:claimed?'<span class="success small">Claimed</span>':`<span class="muted small">${money(h.reward)} at target</span>`}<button class="ghost right" onclick="deleteHabit(${i})">Delete</button></div></div>`
+  }).join('')
+};
+
+// Keep history current after ordinary renders and data loads.
+const renderBaseV415=render;
+render=function(){renderBaseV415();renderHabits()};
+
 </script>
 </body></html>
