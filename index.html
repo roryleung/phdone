@@ -523,7 +523,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 
 <section id="tab-settings" class="tab-panel" role="tabpanel"><div class="subnav"><button class="ghost" onclick="showTab('more')">← More</button></div><section class="grid">
 <div class="card span-12"><div class="account-card"><div><h2>👤 Account & game avatar</h2><p class="muted small">Your circular avatar represents you on The Long Game board.</p></div><div class="row wrap"><button class="secondary" onclick="openPasswordDialog()">🔒 Change password</button><button class="ghost" onclick="logout()">🚪 Log out</button></div></div><div class="avatar-row" style="margin-top:12px"><div id="profileGameAvatar" class="profile-avatar">P</div><div style="min-width:0;flex:1"><div class="label">Board avatar</div><input id="gameAvatarFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadGameAvatar(event)"><div id="gameAvatarStatus" class="muted tiny" style="margin-top:5px">PNG, JPG or WEBP, up to 3 MB. The image is cropped into a circle visually.</div></div></div></div>
-<div class="card span-12"><div class="section-head"><div><h2>🗂️ Projects</h2><p class="muted small">Projects replace the old fixed categories. Create the areas that actually match your work and life.</p></div></div><div class="row wrap"><input id="newProjectName" style="flex:1;min-width:180px" maxlength="60" placeholder="e.g. ALIGN, Thesis, Tutoring"><button class="secondary" onclick="addProject()">＋ Add project</button></div><div id="projectList" class="project-list"></div></div>
+<div class="card span-12"><div class="section-head"><div><h2>🗂️ Projects</h2><p class="muted small">Projects can be active or archived. Archived projects disappear from new task and habit selectors without erasing history.</p></div></div><div class="row wrap"><input id="newProjectName" style="flex:1;min-width:180px" maxlength="60" placeholder="e.g. ALIGN, Thesis, Tutoring"><button class="secondary" onclick="addProject()">＋ Add project</button></div><div id="projectList" class="project-list"></div></div>
 <div class="card span-12 reward-simple"><div class="section-head"><div><h2>🎚️ Rewards</h2><p class="muted small">Productive time earns allowance; finishing a task adds a separate bonus.</p></div></div><div class="reward-mechanism"><div class="piece"><div class="label">Focus earning rate</div><div class="reward-stepper"><button type="button" onclick="adjustHourlyRate(-0.25)">−</button><div class="reward-rate-wrap"><span>£</span><input id="hourlyRate" type="number" min="0" step="0.25" onchange="saveSettings();renderSimpleRewardControl()"><span>/ hour</span></div><button type="button" onclick="adjustHourlyRate(0.25)">＋</button></div></div><div class="plus">＋</div><div class="piece"><div class="label">Default completion bonus</div><div class="reward-stepper"><button type="button" onclick="adjustCompletionBonus(-0.25)">−</button><div class="reward-rate-wrap"><span>£</span><input id="completionBonus" type="number" min="0" step="0.25" onchange="saveSettings();renderSimpleRewardControl()"><span>when finished</span></div><button type="button" onclick="adjustCompletionBonus(0.25)">＋</button></div></div></div><label class="simple-toggle"><span><strong>Auto-balance focus rate weekly</strong><div class="muted small">Optional: gentle changes based on productivity and your real-world savings.</div></span><input id="adaptiveSimpleToggle" type="checkbox" onchange="setAdaptiveSimple(this.checked)"></label><details style="margin-top:10px"><summary class="small" style="cursor:pointer;font-weight:750">Extra reward option</summary><div style="margin-top:10px"><div class="label">Income bonus (%)</div><input id="incomeBonus" type="number" min="0" step="0.5" onchange="saveSettings()"><div class="field-help">Adds a small bonus when a completed task generates real income.</div></div></details></div>
 <div class="card span-12"><div class="section-head"><div><h2>💱 Currency conversion</h2><p class="muted small">HKD, EUR and USD entries are converted to GBP using live daily rates. The latest successful rates are kept as fallbacks.</p></div><button id="refreshFxButton" class="secondary" onclick="refreshExchangeRate(true)">🔄 Refresh rate</button></div><div id="fxStatus" class="fx-card"></div><div class="modal-grid" style="margin-top:12px"><div><div class="label">Fallback HKD → GBP rate</div><input id="manualHkdGbpRate" type="number" min="0.0001" step="0.0001" onchange="saveFxFallback()"><div class="field-help">Used only if the live service is unavailable.</div></div><div><div class="label">Fallback EUR → GBP rate</div><input id="manualEurGbpRate" type="number" min="0.0001" step="0.0001" onchange="saveFxFallback()"><div class="field-help">Used only if the live service is unavailable.</div></div><div><div class="label">Fallback USD → GBP rate</div><input id="manualUsdGbpRate" type="number" min="0.0001" step="0.0001" onchange="saveFxFallback()"><div class="field-help">Used only if the live service is unavailable.</div></div><div><div class="label">Automatic refresh</div><select id="fxAutoRefresh" onchange="saveFxFallback()"><option value="daily">Once per day</option><option value="manual">Manual only</option></select></div></div></div>
 <details class="card span-12 settings-details"><summary><span>🧪 Fine-tune reward balancing</span><small>Advanced controls — usually leave these alone</small></summary><div class="settings-details-body"><div class="section-head"><div><p class="muted small">A personal reward governor: it considers productivity, every PhDone cash reward and your real-world savings rate.</p></div><label class="switch-row"><input id="adaptiveEnabled" type="checkbox" onchange="saveSettings();renderAdaptiveRewardStatus()"><strong>Enable</strong></label></div>
@@ -990,10 +990,10 @@ function normalizeData(v){
   const d=normalizeDataLegacy(v);d.version=18;
   d.settings.completionBonus=Math.max(0,Number(v?.settings?.completionBonus??.5));
   d.dailyIntentions=v?.dailyIntentions&&typeof v.dailyIntentions==="object"?v.dailyIntentions:{};
-  d.projects=(Array.isArray(v?.projects)?v.projects:[]).map(p=>({id:p.id||uid(),name:String(p.name||"Project").trim()||"Project",createdAt:p.createdAt||new Date().toISOString()}));
+  d.projects=(Array.isArray(v?.projects)?v.projects:[]).map(p=>({id:p.id||uid(),name:String(p.name||"Project").trim()||"Project",createdAt:p.createdAt||new Date().toISOString(),archivedAt:p.archivedAt||null}));
   const ensureProject=(raw)=>{if(raw&&d.projects.some(p=>p.id===raw))return raw;const key=String(raw||"general");const name=LEGACY_PROJECT_LABELS[key]||(!raw?"General":key.replace(/[-_]/g," ").replace(/\b\w/g,m=>m.toUpperCase()));let p=d.projects.find(x=>x.name.toLowerCase()===name.toLowerCase());if(!p){p={id:`project-${key.replace(/[^a-z0-9]+/gi,"-").toLowerCase()}-${uid().slice(0,6)}`,name,createdAt:new Date().toISOString()};d.projects.push(p)}return p.id};
-  for(const t of d.tasks){t.projectId=ensureProject(t.projectId||t.category);t.category=t.projectId;t.completionBonus=Math.max(0,Number(t.completionBonus??t.reward??d.settings.completionBonus));t.reward=t.completionBonus;if(t.done&&t.xpAward==null)t.xpAward=Math.max(5,Math.round(Number(t.completionBonus||0)*10)||25)}
-  for(const h of d.habits){h.projectId=ensureProject(h.projectId||h.category);h.category=h.projectId}
+  for(const t of d.tasks){const rawProject=Object.prototype.hasOwnProperty.call(t,"projectId")?t.projectId:t.category;t.projectId=rawProject?ensureProject(rawProject):null;t.category=t.projectId;t.completionBonus=Math.max(0,Number(t.completionBonus??t.reward??d.settings.completionBonus));t.reward=t.completionBonus;if(t.done&&t.xpAward==null)t.xpAward=Math.max(5,Math.round(Number(t.completionBonus||0)*10)||25)}
+  for(const h of d.habits){const rawProject=Object.prototype.hasOwnProperty.call(h,"projectId")?h.projectId:h.category;h.projectId=rawProject?ensureProject(rawProject):null;h.category=h.projectId}
   if(!d.projects.length)d.projects.push({id:"project-general",name:"General",createdAt:new Date().toISOString()});
   d.focusSessions=(d.focusSessions||[]).map(s=>({...s,earned:Number(s.earned??0),rate:Number(s.rate??0),xpAward:Number(s.xpAward??Math.round(Number(s.durationMinutes||0))) }));
   return d
@@ -1096,23 +1096,23 @@ function startMemoryMinigame(){const c=miniGameContext,icons=['🌙','📚','⚡
 // v4.10: Quick Pick is an endless, escalating visual-search challenge.
 function startQuickTapMinigame(){
   const c=miniGameContext,seed=c.seed||c.eventId||c.duelId||'q';
-  const symbols=['✦','✧','★','☆','✶','✷','✹','✺'];
-  let hits=0,lives=3,streak=0,maxStreak=0,round=0,totalReaction=0,ended=false;
+  const symbols=['✦','★','●','▲','◆','☀','☂','♥'];
+  let hits=0,lives=4,streak=0,maxStreak=0,round=0,totalReaction=0,ended=false;
   $("gameMiniTitle").textContent=c.mode==='duel'?'Quick Pick Duel — Endless':'Quick Pick — Endless';
   $("gameMiniHelp").textContent=c.mode==='duel'
-    ?'Both players face the same endless sequence. Find the matching symbol before each shrinking timer expires. Three misses end the run.'
-    :'No finish line: find the matching symbol before each shrinking timer expires. The grid grows, the clock tightens, and three misses end the run.';
+    ?'Both players face the same endless sequence. Find the matching symbol before the timer expires. Four misses end the run.'
+    :'No finish line: find the matching symbol before the timer expires. The difficulty rises more slowly and four misses end the run.';
   $("gameMiniArena").innerHTML=`<div class="quick-pick-shell">
     <div class="quick-pick-hud">
       <div><span class="muted tiny">PICKS</span><strong id="quickHits">0</strong></div>
       <div><span class="muted tiny">STREAK</span><strong id="quickStreak">0</strong></div>
-      <div><span class="muted tiny">LIVES</span><strong id="quickLives">♥ ♥ ♥</strong></div>
+      <div><span class="muted tiny">LIVES</span><strong id="quickLives">♥ ♥ ♥ ♥</strong></div>
       <button id="quickEndRun" type="button" class="ghost small">End run</button>
     </div>
     <div class="quick-pick-prompt"><span class="muted tiny">FIND</span><strong id="quickTarget">✦</strong><span id="quickDifficulty" class="pill neutral">3 × 3</span></div>
     <div class="quick-pick-clock"><span id="quickTimeBar"></span></div>
     <div id="quickGrid" class="quick-pick-grid" aria-label="Quick Pick symbol grid"></div>
-    <div id="quickFeedback" class="muted tiny quick-pick-feedback" aria-live="polite">Three misses end the run.</div>
+    <div id="quickFeedback" class="muted tiny quick-pick-feedback" aria-live="polite">Four misses end the run.</div>
   </div>`;
   const grid=$("quickGrid"),feedback=$("quickFeedback");
   const updateHud=()=>{
@@ -1140,14 +1140,14 @@ function startQuickTapMinigame(){
     if(quickTapTimer)clearTimeout(quickTapTimer);quickTapTimer=null;
     lives--;streak=0;updateHud();
     if(feedback)feedback.textContent=message;
-    if(lives<=0){finish('Three misses');return}
+    if(lives<=0){finish('Four misses');return}
     quickTapTimer=setTimeout(drawRound,170);
   };
   const drawRound=()=>{
     if(ended||miniGameContext!==c)return;round++;
     if(quickTapTimer)clearTimeout(quickTapTimer);quickTapTimer=null;
-    const gridSize=hits<6?3:hits<15?4:5,cells=gridSize*gridSize;
-    const limitMs=Math.max(420,1450-hits*35-(gridSize-3)*120);
+    const gridSize=hits<10?3:hits<25?4:5,cells=gridSize*gridSize;
+    const limitMs=Math.max(750,1900-hits*24-(gridSize-3)*100);
     const targetSymbol=symbols[seededMiniIndex(`${seed}:symbol:${round}`,symbols.length)];
     const targetIndex=seededMiniIndex(`${seed}:target:${round}`,cells);
     const decoys=symbols.filter(x=>x!==targetSymbol);
@@ -1159,7 +1159,7 @@ function startQuickTapMinigame(){
       const symbol=i===targetIndex?targetSymbol:decoys[seededMiniIndex(`${seed}:decoy:${round}:${i}`,decoys.length)];
       return `<button type="button" class="quick-pick-cell" aria-label="${escapeHtml(symbol)}">${symbol}</button>`;
     }).join('');
-    if(feedback)feedback.textContent=hits<6?'Find the match.':hits<15?'Faster now — scan carefully.':'Expert grid — keep the streak alive.';
+    if(feedback)feedback.textContent=hits<10?'Find the match.':hits<25?'A little faster now — scan carefully.':'Big grid — stay calm and keep the streak.';
     updateHud();
     const roundStarted=performance.now();
     const bar=$("quickTimeBar");
@@ -1786,8 +1786,8 @@ closeGameMinigame=function(){clearMiniV413Timers();closeGameMinigameBaseV413()};
 
 function v413Seed(c=miniGameContext){return String(c?.seed||c?.eventId||c?.duelId||'phdone')}
 function timingTargetV413(c=miniGameContext){
-  const idx=seededMiniIndex(v413Seed(c)+':perfect-target',351); // 4.75 - 8.25 inclusive
-  return Math.round((4.75+idx/100)*100)/100;
+  const idx=seededMiniIndex(v413Seed(c)+':perfect-target',241); // 5.00 - 7.40 inclusive
+  return Math.round((5.00+idx/100)*100)/100;
 }
 function timingTargetTextV413(c=miniGameContext){return timingTargetV413(c).toFixed(2)}
 
@@ -1822,21 +1822,21 @@ renderMinigameStart=function(){
   if(type==='timing'){
     const target=timingTargetTextV413(c);
     $('gameMiniTitle').textContent=duel?'Perfect Timing Duel':c.encounterName?`Beat ${c.encounterName}: Perfect Timing`:'Perfect Timing';
-    $('gameMiniHelp').innerHTML=`Stop the clock at <strong>${target} seconds</strong>. The live clock is visible only until <strong>3.00 seconds</strong>, then you must judge the rest yourself.${duel?' Both players have exactly the same target; closest time wins.':''}`;
-    $('gameMiniArena').innerHTML=`<div class="timing-v413"><div class="timing-target-v413"><span>TARGET</span><strong>${target}s</strong></div><div id="miniTimingDisplay" class="mini-big timing-clock-v413">0.00</div><div id="miniTimingHintV413" class="muted small">You will lose sight of the clock after 3.00s.</div><button id="miniTimingButton" class="primary timing-stop-v413">Start</button></div>`;
+    $('gameMiniHelp').innerHTML=`Stop the clock at <strong>${target} seconds</strong>. The clock stays visible until <strong>3.00 seconds</strong>, then it hides. You now get a little more scoring tolerance.${duel?' Both players have the same target; closest time wins.':''}`;
+    $('gameMiniArena').innerHTML=`<div class="timing-v413"><div class="timing-target-v413"><span>TARGET</span><strong>${target}s</strong></div><div id="miniTimingDisplay" class="mini-big timing-clock-v413">0.00</div><div id="miniTimingHintV413" class="muted small">Clock hides after 3.00s — the target stays visible.</div><button id="miniTimingButton" class="primary timing-stop-v413">Start</button></div>`;
     $('miniTimingButton').onclick=startTimingMinigame;
   }else if(type==='memory'){
     $('gameMiniTitle').textContent=duel?'Flash Memory Duel':'Flash Memory';
-    $('gameMiniHelp').textContent=duel?'Survive the same rapid memory rounds as your opponent. Two mistakes end the run; higher score wins.':'Rapid-fire memory: the sequences grow while the display and answer window shrink. Two mistakes end the run.';
+    $('gameMiniHelp').textContent=duel?'Both players get the same gentler 8-round sequence. You have three lives; higher score wins.':'Memory now ramps up more gently: three lives, shorter sequences and eight rounds. The display and answer window still shrink as you progress.';
   }else if(type==='quicktap'){
     $('gameMiniTitle').textContent=duel?'Quick Pick Duel — Endless':'Quick Pick — Endless';
-    $('gameMiniHelp').textContent=duel?'Both players face the same seeded escalating visual-search run. Three misses end it; higher endurance score wins.':'Endless escalating visual search. The grid grows, the clock shrinks, and three misses end the run.';
+    $('gameMiniHelp').textContent=duel?'Both players face the same visual-search run. It ramps up more slowly and four misses end it; higher endurance score wins.':'Endless visual search with a gentler ramp: more time, clearer symbols, and four misses before the run ends.';
   }else if(type==='mash'){
     $('gameMiniTitle').textContent=duel?'Mash Rush Duel':'Mash Rush';
-    $('gameMiniHelp').textContent='Alternate LEFT and RIGHT as quickly as you can for 6 seconds. Repeating the same side does not count. Higher total wins.';
+    $('gameMiniHelp').textContent='Alternate LEFT and RIGHT for 7 seconds. Repeating the same side is simply ignored. Higher total wins.';
   }else if(type==='reverse'){
     $('gameMiniTitle').textContent=duel?'Reverse Rush Duel':'Reverse Rush';
-    $('gameMiniHelp').textContent='An arrow appears. Tap the OPPOSITE direction before the shrinking timer expires. Three mistakes end the run.';
+    $('gameMiniHelp').textContent='An arrow appears. Tap the OPPOSITE direction. You now get more reaction time, four lives, and only ten rounds.';
   }
   safeShowModal(dialog);
   if(type==='memory')v413Timeout(()=>startMemoryMinigame(),90);
@@ -1852,7 +1852,7 @@ startTimingMinigame=function(){
     const elapsed=(performance.now()-miniTimerStart)/1000;if(miniTimerRAF)cancelAnimationFrame(miniTimerRAF);miniTimerRAF=null;
     display.classList.remove('timing-hidden-v413');display.textContent=elapsed.toFixed(2);if(hint)hint.innerHTML=`You stopped at <strong>${elapsed.toFixed(2)}s</strong> · target ${target.toFixed(2)}s`;
     button.disabled=true;const errorMs=Math.abs(elapsed-target)*1000;
-    if(c.mode==='duel')await submitGameDuel(errorMs);else await submitSoloMinigame(Math.max(0,Math.min(100,100-errorMs/20)))
+    if(c.mode==='duel')await submitGameDuel(errorMs);else await submitSoloMinigame(Math.max(0,Math.min(100,100-errorMs/30)))
   };
   const tick=()=>{
     if(button.disabled||miniGameContext!==c)return;const elapsed=(performance.now()-miniTimerStart)/1000;
@@ -1864,17 +1864,17 @@ startTimingMinigame=function(){
 startMemoryMinigame=function(){
   const c=miniGameContext;if(!c)return;clearMiniV413Timers();
   const seed=v413Seed(c),icons=['🌙','📚','⚡','🎯','🧠','✨','🔷','🌿'];
-  let round=0,lives=2,hits=0,streak=0,best=0,totalReaction=0,ended=false,answerTimer=null;
+  let round=0,lives=3,hits=0,streak=0,best=0,totalReaction=0,ended=false,answerTimer=null;
   const arena=$('gameMiniArena');
-  arena.innerHTML=`<div class="memory-v413"><div class="memory-hud-v413"><span>ROUND <strong id="memRoundV413">1</strong></span><span>SCORE <strong id="memHitsV413">0</strong></span><span>LIVES <strong id="memLivesV413">♥ ♥</strong></span></div><div id="memoryFlashV413" class="memory-flash-v413"></div><div id="memoryChoicesV413" class="memory-options memory-options-v413"></div><div id="memoryClockV413" class="memory-clock-v413"><span></span></div><div id="memoryFeedbackV413" class="muted tiny">Get ready.</div></div>`;
+  arena.innerHTML=`<div class="memory-v413"><div class="memory-hud-v413"><span>ROUND <strong id="memRoundV413">1</strong></span><span>SCORE <strong id="memHitsV413">0</strong></span><span>LIVES <strong id="memLivesV413">♥ ♥ ♥</strong></span></div><div id="memoryFlashV413" class="memory-flash-v413"></div><div id="memoryChoicesV413" class="memory-options memory-options-v413"></div><div id="memoryClockV413" class="memory-clock-v413"><span></span></div><div id="memoryFeedbackV413" class="muted tiny">Get ready.</div></div>`;
   const updateHud=()=>{if($('memRoundV413'))$('memRoundV413').textContent=String(Math.max(1,round));if($('memHitsV413'))$('memHitsV413').textContent=String(hits);if($('memLivesV413'))$('memLivesV413').textContent='♥ '.repeat(lives).trim()||'—'};
-  const finish=async(reason)=>{if(ended)return;ended=true;if(answerTimer)clearTimeout(answerTimer);const avg=hits?totalReaction/hits:1800,score=Math.max(0,Math.min(100,hits*7+best*2+Math.max(0,18-(avg-450)/70)));arena.innerHTML=`<div class="quick-pick-summary"><div class="mini-big">${hits}</div><strong>rounds cleared</strong><div class="muted small" style="margin-top:8px">Best streak ${best}${hits?` · avg answer ${Math.round(avg)} ms`:''}</div><div class="pill neutral" style="margin-top:10px">${escapeHtml(reason)}</div></div>`;c.mode==='duel'?await submitGameDuel(score):await submitSoloMinigame(score)};
-  const loseLife=(msg)=>{if(ended)return;lives--;streak=0;updateHud();const f=$('memoryFeedbackV413');if(f)f.textContent=msg;if(lives<=0){v413Timeout(()=>finish('Memory overloaded'),180);return}v413Timeout(drawRound,220)};
+  const finish=async(reason)=>{if(ended)return;ended=true;if(answerTimer)clearTimeout(answerTimer);const avg=hits?totalReaction/hits:2000,score=Math.max(0,Math.min(100,hits*9+best*2+Math.max(0,18-(avg-650)/100)));arena.innerHTML=`<div class="quick-pick-summary"><div class="mini-big">${hits}</div><strong>rounds cleared</strong><div class="muted small" style="margin-top:8px">Best streak ${best}${hits?` · avg answer ${Math.round(avg)} ms`:''}</div><div class="pill neutral" style="margin-top:10px">${escapeHtml(reason)}</div></div>`;c.mode==='duel'?await submitGameDuel(score):await submitSoloMinigame(score)};
+  const loseLife=(msg)=>{if(ended)return;lives--;streak=0;updateHud();const f=$('memoryFeedbackV413');if(f)f.textContent=msg;if(lives<=0){v413Timeout(()=>finish('Three misses — run over'),180);return}v413Timeout(drawRound,220)};
   const drawRound=()=>{
     if(ended||miniGameContext!==c)return;round++;updateHud();
-    const len=Math.min(9,3+round),showMs=Math.max(380,1040-(round-1)*80),answerMs=Math.max(650,1450-(round-1)*75);
+    const len=Math.min(7,2+round),showMs=Math.max(700,1500-(round-1)*100),answerMs=Math.max(1100,2400-(round-1)*160);
     const seq=Array.from({length:len},(_,i)=>icons[seededMiniIndex(`${seed}:mem:${round}:${i}`,icons.length)]),correct=seq.join(' '),options=[correct];
-    for(let k=1;k<4;k++){const alt=[...seq],idx=seededMiniIndex(`${seed}:mem:${round}:x:${k}`,len),step=1+seededMiniIndex(`${seed}:mem:${round}:s:${k}`,icons.length-1);alt[idx]=icons[(icons.indexOf(alt[idx])+step)%icons.length];options.push(alt.join(' '))}
+    for(let k=1;k<3;k++){const alt=[...seq],idx=seededMiniIndex(`${seed}:mem:${round}:x:${k}`,len),step=1+seededMiniIndex(`${seed}:mem:${round}:s:${k}`,icons.length-1);alt[idx]=icons[(icons.indexOf(alt[idx])+step)%icons.length];options.push(alt.join(' '))}
     options.sort((a,b)=>seededMiniIndex(`${seed}:mem:${round}:sort:${a}`,1000)-seededMiniIndex(`${seed}:mem:${round}:sort:${b}`,1000));
     const flash=$('memoryFlashV413'),choices=$('memoryChoicesV413'),clock=$('memoryClockV413')?.firstElementChild,feedback=$('memoryFeedbackV413');if(!flash||!choices)return;
     flash.textContent=correct;flash.classList.remove('hidden');choices.innerHTML='';if(clock)clock.style.width='100%';if(feedback)feedback.textContent=`${len} symbols · ${Math.round(showMs)} ms glimpse`;
@@ -1884,7 +1884,7 @@ startMemoryMinigame=function(){
       answerTimer=v413Timeout(()=>{choices.querySelectorAll('button').forEach(b=>b.disabled=true);loseLife('Too slow.')},answerMs);
       [...choices.querySelectorAll('button')].forEach(b=>b.onclick=()=>{
         if(ended)return;if(answerTimer)clearTimeout(answerTimer);answerTimer=null;choices.querySelectorAll('button').forEach(x=>x.disabled=true);const ok=b.textContent.trim()===correct,response=performance.now()-started;
-        if(ok){hits++;streak++;best=Math.max(best,streak);totalReaction+=response;updateHud();if(feedback)feedback.textContent=`Correct · ${Math.round(response)} ms`;if(round>=12){v413Timeout(()=>finish('Perfect 12-round run'),180)}else v413Timeout(drawRound,170)}else loseLife('Wrong sequence.')
+        if(ok){hits++;streak++;best=Math.max(best,streak);totalReaction+=response;updateHud();if(feedback)feedback.textContent=`Correct · ${Math.round(response)} ms`;if(round>=8){v413Timeout(()=>finish('Cleared all 8 rounds'),220)}else v413Timeout(drawRound,260)}else loseLife('Wrong sequence.')
       })
     },showMs)
   };
@@ -1893,20 +1893,20 @@ startMemoryMinigame=function(){
 
 function startMashRushV413(){
   const c=miniGameContext;if(!c)return;clearMiniV413Timers();let running=false,ended=false,count=0,last=null,start=0,raf=null;
-  const arena=$('gameMiniArena');arena.innerHTML=`<div class="mash-v413"><div class="mash-score-v413"><span>ALTERNATING TAPS</span><strong id="mashCountV413">0</strong></div><div id="mashTimeV413" class="mini-big">6.0</div><div class="mash-buttons-v413"><button id="mashLeftV413" class="secondary">◀ LEFT</button><button id="mashRightV413" class="secondary">RIGHT ▶</button></div><button id="mashStartV413" class="primary">Start 6-second rush</button><div id="mashFeedbackV413" class="muted tiny">You must alternate sides.</div></div>`;
-  const finish=async()=>{if(ended)return;ended=true;running=false;if(raf)cancelAnimationFrame(raf);$('mashLeftV413').disabled=true;$('mashRightV413').disabled=true;$('mashStartV413').disabled=true;const soloScore=Math.min(100,count*2.4);$('mashFeedbackV413').textContent=`Finished with ${count} valid alternating taps.`;c.mode==='duel'?await submitGameDuel(count):await submitSoloMinigame(soloScore)};
+  const arena=$('gameMiniArena');arena.innerHTML=`<div class="mash-v413"><div class="mash-score-v413"><span>ALTERNATING TAPS</span><strong id="mashCountV413">0</strong></div><div id="mashTimeV413" class="mini-big">7.0</div><div class="mash-buttons-v413"><button id="mashLeftV413" class="secondary">◀ LEFT</button><button id="mashRightV413" class="secondary">RIGHT ▶</button></div><button id="mashStartV413" class="primary">Start 7-second rush</button><div id="mashFeedbackV413" class="muted tiny">You must alternate sides.</div></div>`;
+  const finish=async()=>{if(ended)return;ended=true;running=false;if(raf)cancelAnimationFrame(raf);$('mashLeftV413').disabled=true;$('mashRightV413').disabled=true;$('mashStartV413').disabled=true;const soloScore=Math.min(100,count*2.1);$('mashFeedbackV413').textContent=`Finished with ${count} valid alternating taps.`;c.mode==='duel'?await submitGameDuel(count):await submitSoloMinigame(soloScore)};
   const tap=side=>{if(!running||ended)return;if(last===side){$('mashFeedbackV413').textContent='Alternate sides — repeat tap ignored.';return}last=side;count++;$('mashCountV413').textContent=String(count);const b=$(side==='L'?'mashLeftV413':'mashRightV413');b.classList.remove('mash-hit-v413');void b.offsetWidth;b.classList.add('mash-hit-v413')};
   $('mashLeftV413').onclick=()=>tap('L');$('mashRightV413').onclick=()=>tap('R');
-  $('mashStartV413').onclick=()=>{if(running)return;running=true;start=performance.now();$('mashStartV413').classList.add('hidden');const tick=()=>{if(!running||ended)return;const left=Math.max(0,6-(performance.now()-start)/1000);$('mashTimeV413').textContent=left.toFixed(1);if(left<=0){finish();return}raf=requestAnimationFrame(tick)};tick()}
+  $('mashStartV413').onclick=()=>{if(running)return;running=true;start=performance.now();$('mashStartV413').classList.add('hidden');const tick=()=>{if(!running||ended)return;const left=Math.max(0,7-(performance.now()-start)/1000);$('mashTimeV413').textContent=left.toFixed(1);if(left<=0){finish();return}raf=requestAnimationFrame(tick)};tick()}
 }
 
 function startReverseRushV413(){
   const c=miniGameContext;if(!c)return;
   clearMiniV413Timers();
   const seed=v413Seed(c),dirs=[{k:'U',icon:'↑',op:'D'},{k:'R',icon:'→',op:'L'},{k:'D',icon:'↓',op:'U'},{k:'L',icon:'←',op:'R'}];
-  let round=0,lives=3,hits=0,streak=0,best=0,totalReaction=0,ended=false,roundTimer=null;
+  let round=0,lives=4,hits=0,streak=0,best=0,totalReaction=0,ended=false,roundTimer=null;
   const arena=$('gameMiniArena');
-  arena.innerHTML=`<div class="reverse-v413"><div class="memory-hud-v413"><span>ROUND <strong id="revRoundV413">1</strong></span><span>CORRECT <strong id="revHitsV413">0</strong></span><span>LIVES <strong id="revLivesV413">♥ ♥ ♥</strong></span></div><div class="reverse-prompt-v413"><span class="muted tiny">TAP THE OPPOSITE</span><strong id="revArrowV413">↑</strong></div><div class="reverse-clock-v413"><span id="revClockV413"></span></div><div class="reverse-pad-v413"><button data-dir="U">↑</button><button data-dir="L">←</button><button data-dir="D">↓</button><button data-dir="R">→</button></div><div id="revFeedbackV413" class="muted tiny">React quickly.</div></div>`;
+  arena.innerHTML=`<div class="reverse-v413"><div class="memory-hud-v413"><span>ROUND <strong id="revRoundV413">1</strong></span><span>CORRECT <strong id="revHitsV413">0</strong></span><span>LIVES <strong id="revLivesV413">♥ ♥ ♥ ♥</strong></span></div><div class="reverse-prompt-v413"><span class="muted tiny">TAP THE OPPOSITE</span><strong id="revArrowV413">↑</strong></div><div class="reverse-clock-v413"><span id="revClockV413"></span></div><div class="reverse-pad-v413"><button data-dir="U">↑</button><button data-dir="L">←</button><button data-dir="D">↓</button><button data-dir="R">→</button></div><div id="revFeedbackV413" class="muted tiny">React quickly.</div></div>`;
   const update=()=>{
     if($('revRoundV413'))$('revRoundV413').textContent=String(Math.max(1,round));
     if($('revHitsV413'))$('revHitsV413').textContent=String(hits);
@@ -1914,17 +1914,17 @@ function startReverseRushV413(){
   };
   const finish=async(reason)=>{
     if(ended)return;ended=true;if(roundTimer)clearTimeout(roundTimer);
-    const avg=hits?totalReaction/hits:1500,score=Math.max(0,Math.min(100,hits*7+best*2+Math.max(0,20-(avg-350)/55)));
+    const avg=hits?totalReaction/hits:1700,score=Math.max(0,Math.min(100,hits*8+best*1.5+Math.max(0,18-(avg-550)/85)));
     arena.querySelectorAll('button').forEach(b=>b.disabled=true);if($('revFeedbackV413'))$('revFeedbackV413').textContent=reason;
     if(c.mode==='duel')await submitGameDuel(score);else await submitSoloMinigame(score);
   };
   const miss=msg=>{
     if(ended)return;lives--;streak=0;update();if($('revFeedbackV413'))$('revFeedbackV413').textContent=msg;
-    if(lives<=0)v413Timeout(()=>finish('Three mistakes — run over.'),180);else v413Timeout(draw,180);
+    if(lives<=0)v413Timeout(()=>finish('Four mistakes — run over.'),220);else v413Timeout(draw,260);
   };
   const draw=()=>{
     if(ended||miniGameContext!==c)return;round++;update();
-    const d=dirs[seededMiniIndex(`${seed}:reverse:${round}`,dirs.length)],limit=Math.max(430,1250-(round-1)*65),started=performance.now();
+    const d=dirs[seededMiniIndex(`${seed}:reverse:${round}`,dirs.length)],limit=Math.max(750,1600-(round-1)*70),started=performance.now();
     $('revArrowV413').textContent=d.icon;if($('revFeedbackV413'))$('revFeedbackV413').textContent=`Round ${round} · ${limit} ms`;
     const bar=$('revClockV413');if(bar){bar.style.transition='none';bar.style.width='100%';void bar.offsetWidth;bar.style.transition=`width ${limit}ms linear`;bar.style.width='0%'}
     if(roundTimer)clearTimeout(roundTimer);roundTimer=v413Timeout(()=>miss('Too slow.'),limit);
@@ -1935,7 +1935,7 @@ function startReverseRushV413(){
         const ok=b.dataset.dir===d.op,response=performance.now()-started;
         if(ok){
           hits++;streak++;best=Math.max(best,streak);totalReaction+=response;update();if($('revFeedbackV413'))$('revFeedbackV413').textContent=`Correct · ${Math.round(response)} ms`;
-          if(round>=14)v413Timeout(()=>finish('Cleared all 14 rounds.'),160);else v413Timeout(draw,140);
+          if(round>=10)v413Timeout(()=>finish('Cleared all 10 rounds.'),220);else v413Timeout(draw,240);
         }else miss('Wrong direction.');
       };
     });
@@ -2572,6 +2572,160 @@ function refreshMobileEditorsV420(){decorateEditorModeV420();renderTasks();rende
 if(mobileEditorMediaV420.addEventListener)mobileEditorMediaV420.addEventListener('change',refreshMobileEditorsV420);
 else if(mobileEditorMediaV420.addListener)mobileEditorMediaV420.addListener(refreshMobileEditorsV420);
 decorateEditorModeV420();
+</script>
+
+
+<!-- PhDone v4.21 — mobile quick-add + project archive -->
+<!-- PhDone v4.22 — gentler minigame balancing -->
+<style>
+/* Mobile task quick-add: Asana-style bottom sheet, no keyboard Enter required. */
+.mobile-task-quick-v421{border:0;padding:0;background:transparent;width:min(620px,100%);max-width:none;margin:auto 0 0 0;height:auto;max-height:calc(100% - 28px);overflow:visible}
+.mobile-task-quick-v421::backdrop{background:rgba(18,18,26,.58);backdrop-filter:blur(2px)}
+.mobile-task-sheet-v421{background:var(--card);color:var(--text);border-radius:24px 24px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -18px 60px rgba(22,18,55,.24);max-height:calc(100vh - 28px);overflow:auto}
+.mobile-task-handle-v421{width:44px;height:5px;border-radius:999px;background:var(--line);margin:0 auto 13px}
+.mobile-task-kicker-v421{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.mobile-task-name-v421{width:100%;border:0!important;background:transparent!important;border-radius:0!important;padding:8px 0 12px!important;font-size:1.25rem!important;font-weight:760;box-shadow:none!important;outline:0}
+.mobile-task-name-v421::placeholder{color:var(--muted);font-weight:500}
+.mobile-task-quick-fields-v421{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.mobile-task-field-v421{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid var(--line);border-radius:15px;padding:8px 10px;background:var(--bg)}
+.mobile-task-field-v421>span{font-size:1.18rem;flex:0 0 auto}
+.mobile-task-field-v421 select,.mobile-task-field-v421 input{min-width:0;width:100%;border:0!important;background:transparent!important;padding:4px!important;box-shadow:none!important;font-size:1rem}
+.mobile-task-more-toggle-v421{margin-top:10px;padding:8px 3px;color:var(--muted)}
+.mobile-task-more-v421{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:4px}
+.mobile-task-more-v421.hidden{display:none}
+.mobile-task-more-v421 label{min-width:0}
+.mobile-task-more-v421 .label{font-size:.73rem;margin-bottom:4px}
+.mobile-task-income-v421{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:6px}
+.mobile-task-actions-v421{display:flex;align-items:center;gap:10px;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.mobile-task-actions-v421 .primary{margin-left:auto;min-width:112px}
+.mobile-task-fab-v421{display:none;position:fixed;z-index:65;right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:58px;height:58px;padding:0;border-radius:19px;font-size:2rem;line-height:1;background:var(--accent);color:#fff;box-shadow:0 10px 28px rgba(90,68,220,.30)}
+.mobile-task-fab-v421:active{transform:scale(.97)}
+.project-row-v421{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px 11px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.project-row-v421.archived{opacity:.72;background:#f7f7fb}
+.project-status-v421{display:inline-flex;padding:3px 7px;border-radius:999px;background:#f0eef8;color:var(--muted);font-size:.72rem;font-weight:800;margin-left:6px}
+.project-archive-head-v421{margin:14px 0 6px;color:var(--muted);font-size:.76rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:760px){
+  .mobile-task-fab-v421.show{display:grid;place-items:center}
+  #tab-tasks .task-add-top{display:none}
+  .mobile-task-quick-v421{width:100%}
+  .mobile-task-sheet-v421{max-height:min(78vh,680px)}
+}
+@media(max-width:430px){
+  .mobile-task-quick-fields-v421,.mobile-task-more-v421{grid-template-columns:1fr 1fr}
+  .mobile-task-sheet-v421{padding-left:14px;padding-right:14px}
+}
+</style>
+
+<dialog id="mobileTaskQuickDialogV421" class="mobile-task-quick-v421" aria-labelledby="mobileTaskQuickTitleV421">
+  <form class="mobile-task-sheet-v421" onsubmit="createMobileTaskV421(event)">
+    <div class="mobile-task-handle-v421" aria-hidden="true"></div>
+    <div class="mobile-task-kicker-v421" id="mobileTaskQuickTitleV421"><span>✓</span><span>Task · PhDone</span></div>
+    <input id="mobileTaskNameV421" class="mobile-task-name-v421" maxlength="160" placeholder="Task name…" autocomplete="off" required>
+    <div class="mobile-task-quick-fields-v421">
+      <label class="mobile-task-field-v421"><span>🗂️</span><select id="mobileTaskProjectV421" aria-label="Project"></select></label>
+      <label class="mobile-task-field-v421"><span>📅</span><input id="mobileTaskDateV421" type="date" aria-label="Due date" required></label>
+    </div>
+    <button type="button" class="ghost mobile-task-more-toggle-v421" onclick="toggleMobileTaskMoreV421()"><span id="mobileTaskMoreLabelV421">＋ More details</span></button>
+    <div id="mobileTaskMoreV421" class="mobile-task-more-v421 hidden">
+      <label><span class="label">Planned hours</span><input id="mobileTaskHoursV421" type="number" min="0.25" step="0.25" inputmode="decimal"></label>
+      <label><span class="label">Finish bonus (£)</span><input id="mobileTaskRewardV421" type="number" min="0" step="0.25" inputmode="decimal"></label>
+      <label style="grid-column:1/-1"><span class="label">Income generated (optional)</span><div class="mobile-task-income-v421"><input id="mobileTaskIncomeV421" type="number" min="0" step="0.01" inputmode="decimal"><select id="mobileTaskCurrencyV421"><option value="GBP">GBP</option><option value="HKD">HKD</option><option value="EUR">EUR</option><option value="USD">USD</option></select></div></label>
+    </div>
+    <div class="mobile-task-actions-v421"><button type="button" class="ghost" onclick="closeMobileTaskQuickV421()">Cancel</button><button id="mobileTaskCreateV421" class="primary">Create</button></div>
+  </form>
+</dialog>
+<button id="mobileTaskFabV421" type="button" class="mobile-task-fab-v421" aria-label="Add task" title="Add task" onclick="openTaskDialog()">＋</button>
+
+<script>
+// PhDone v4.21 ---------------------------------------------------------------
+// A project can be archived without deleting historical records. Archived
+// projects disappear from normal selectors. Active tasks/habits are detached
+// when their project is archived; completed tasks retain the historical link.
+function activeProjectsV421(){return (data.projects||[]).filter(p=>!p.archivedAt)}
+function archivedProjectsV421(){return (data.projects||[]).filter(p=>Boolean(p.archivedAt))}
+
+// Blank is a first-class project choice. Desktop row drafts no longer snap back
+// to the first project after the user explicitly chooses No project.
+taskDraftDefaultsV416=function(){return{name:'',projectId:'',date:today(),hours:1,completionBonus:Number(data?.settings?.completionBonus||0),income:0,incomeCurrency:'GBP'}};
+ensureTaskDraftV416=function(){if(!taskDraftV416)taskDraftV416=taskDraftDefaultsV416();if(taskDraftV416.projectId&&!activeProjectsV421().some(p=>p.id===taskDraftV416.projectId))taskDraftV416.projectId='';return taskDraftV416};
+habitDraftDefaultsV417=function(){return{mode:'regular',name:'',projectId:'',startDate:today(),abstinenceStartedAt:localDateTimeValue(new Date()),target:7,recurrence:'weekly',reward:5}};
+ensureHabitDraftV417=function(){if(!habitDraftV417)habitDraftV417=habitDraftDefaultsV417();if(habitDraftV417.projectId&&!activeProjectsV421().some(p=>p.id===habitDraftV417.projectId))habitDraftV417.projectId='';return habitDraftV417};
+
+projectName=function(id){
+  if(!id)return 'No project';
+  return (data.projects||[]).find(p=>p.id===id)?.name||LEGACY_PROJECT_LABELS[id]||'No project';
+};
+projectOptions=function(selected=''){
+  const active=activeProjectsV421();
+  const current=(data.projects||[]).find(p=>p.id===selected);
+  let html=`<option value="" ${!selected?'selected':''}>No project</option>`;
+  if(current?.archivedAt)html+=`<option value="${escapeHtml(current.id)}" selected>${escapeHtml(current.name)} (archived)</option>`;
+  html+=active.map(p=>`<option value="${escapeHtml(p.id)}" ${p.id===selected?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+  return html;
+};
+projectOptionsV417=function(selected=''){return projectOptions(selected)};
+
+renderProjects=function(){
+  const el=$('projectList');if(!el)return;
+  const active=activeProjectsV421(),archived=archivedProjectsV421();
+  const row=(p,isArchived)=>`<div class="project-row-v421 ${isArchived?'archived':''}"><span class="project-dot"></span><div><strong>${escapeHtml(p.name)}</strong>${isArchived?'<span class="project-status-v421">Archived</span>':''}</div><div class="row wrap">${isArchived?`<button type="button" class="secondary small" onclick='restoreProjectV421(${JSON.stringify(p.id)})'>Restore</button>${projectCanDeleteV421(p.id)?`<button type="button" class="ghost small" onclick='deleteArchivedProjectV421(${JSON.stringify(p.id)})'>Delete</button>`:''}`:`<button type="button" class="ghost small" onclick='archiveProjectV421(${JSON.stringify(p.id)})'>Archive</button>`}</div></div>`;
+  el.innerHTML=(active.length?active.map(p=>row(p,false)).join(''):'<div class="empty small">No active projects. New tasks and habits can use “No project”.</div>')+(archived.length?`<div class="project-archive-head-v421">Archived projects</div>${archived.map(p=>row(p,true)).join('')}`:'');
+};
+function projectCanDeleteV421(id){
+  return !(data.tasks||[]).some(t=>t.projectId===id)&&!(data.habits||[]).some(h=>h.projectId===id)&&!(data.focusSessions||[]).some(s=>s.projectId===id);
+}
+async function archiveProjectV421(id){
+  const p=(data.projects||[]).find(x=>x.id===id);if(!p||p.archivedAt)return;
+  const activeTasks=(data.tasks||[]).filter(t=>!t.done&&t.projectId===id);
+  const habits=(data.habits||[]).filter(h=>h.projectId===id);
+  const msg=(activeTasks.length||habits.length)?`Archive “${p.name}”? ${activeTasks.length} active task${activeTasks.length===1?'':'s'} and ${habits.length} habit${habits.length===1?'':'s'} will be changed to No project. Completed tasks keep the project name for history.`:`Archive “${p.name}”? It will disappear from normal project selectors.`;
+  if(!confirm(msg))return;
+  p.archivedAt=new Date().toISOString();
+  for(const t of activeTasks){t.projectId=null;t.category=null}
+  for(const h of habits){h.projectId=null;h.category=null}
+  if(typeof taskDraftV416!=='undefined'&&taskDraftV416?.projectId===id)taskDraftV416.projectId='';
+  if(typeof habitDraftV417!=='undefined'&&habitDraftV417?.projectId===id)habitDraftV417.projectId='';
+  render();await saveNow();
+  if(activeTasks.length||habits.length)showGameToast?.(`Project archived · ${activeTasks.length+habits.length} active item${activeTasks.length+habits.length===1?'':'s'} moved to No project`);
+}
+async function restoreProjectV421(id){const p=(data.projects||[]).find(x=>x.id===id);if(!p)return;p.archivedAt=null;render();await saveNow()}
+async function deleteArchivedProjectV421(id){const p=(data.projects||[]).find(x=>x.id===id);if(!p||!p.archivedAt)return;if(!projectCanDeleteV421(id)){alert('This archived project still has historical records attached, so it cannot be deleted.');return}if(!confirm(`Permanently delete “${p.name}”?`))return;data.projects=data.projects.filter(x=>x.id!==id);render();await saveNow()}
+deleteProject=function(id){const p=(data.projects||[]).find(x=>x.id===id);if(!p)return;if(!p.archivedAt)return archiveProjectV421(id);return deleteArchivedProjectV421(id)};
+
+addProject=function(){const input=$('newProjectName'),name=input?.value.trim();if(!name)return;const existing=(data.projects||[]).find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){if(existing.archivedAt&&confirm(`“${existing.name}” is archived. Restore it instead?`)){existing.archivedAt=null;input.value='';render();save();}else if(!existing.archivedAt)alert('That project already exists.');return}data.projects.push({id:uid(),name,createdAt:new Date().toISOString(),archivedAt:null});input.value='';render();save()};
+
+// Keep project selects aligned with the active/archive model.
+populateProjectSelects=function(taskSelected=null,habitSelected=null){if($('taskProjectId'))$('taskProjectId').innerHTML=projectOptions(taskSelected??'');if($('habitProjectId'))$('habitProjectId').innerHTML=projectOptions(habitSelected??'')};
+populateHabitProjectSelect=function(selected){if($('habitProjectId'))$('habitProjectId').innerHTML=projectOptions(selected??'')};
+
+// Mobile Asana-style quick task capture --------------------------------------
+let mobileTaskTemplateV421=null;
+function toggleMobileTaskMoreV421(force=null){const box=$('mobileTaskMoreV421');if(!box)return;const show=force===null?box.classList.contains('hidden'):Boolean(force);box.classList.toggle('hidden',!show);$('mobileTaskMoreLabelV421').textContent=show?'− Fewer details':'＋ More details'}
+function mobileTaskDefaultsV421(){return{projectId:'',date:today(),hours:1,reward:Number(data.settings.completionBonus||0),income:0,currency:'GBP'}}
+function openMobileTaskQuickV421(templateId=null){
+  const dialog=$('mobileTaskQuickDialogV421');if(!dialog)return openTaskDialogMobileV420(templateId);
+  let d=mobileTaskDefaultsV421();mobileTaskTemplateV421=templateId||null;
+  if(templateId){const t=(data.tasks||[]).find(x=>x.id===templateId);if(t)d={projectId:t.projectId||'',date:today(),hours:Number(t.hours||1),reward:Number(t.completionBonus??t.reward??data.settings.completionBonus??0),income:Number(t.income||0),currency:t.incomeCurrency||'GBP',name:t.name||''}}
+  $('mobileTaskNameV421').value=d.name||'';$('mobileTaskProjectV421').innerHTML=projectOptions(d.projectId||'');$('mobileTaskProjectV421').value=d.projectId||'';$('mobileTaskDateV421').value=d.date||today();$('mobileTaskHoursV421').value=d.hours;$('mobileTaskRewardV421').value=Number(d.reward||0);$('mobileTaskIncomeV421').value=Number(d.income||0);$('mobileTaskCurrencyV421').value=['GBP','HKD','EUR','USD'].includes(d.currency)?d.currency:'GBP';toggleMobileTaskMoreV421(Boolean(templateId&&Number(d.income)>0));safeShowModal(dialog);setTimeout(()=>$('mobileTaskNameV421')?.focus(),80);updateMobileTaskFabV421();
+}
+function closeMobileTaskQuickV421(){$('mobileTaskQuickDialogV421')?.close();mobileTaskTemplateV421=null;updateMobileTaskFabV421()}
+async function createMobileTaskV421(event){
+  event.preventDefault();const name=$('mobileTaskNameV421').value.trim(),date=$('mobileTaskDateV421').value||today(),hours=Math.max(.25,Number($('mobileTaskHoursV421').value||1)),reward=Math.max(0,Number($('mobileTaskRewardV421').value||0)),income=Math.max(0,Number($('mobileTaskIncomeV421').value||0)),currency=$('mobileTaskCurrencyV421').value||'GBP',projectId=$('mobileTaskProjectV421').value||null;
+  if(!name){$('mobileTaskNameV421').focus();return}
+  const task={id:uid(),name,date,projectId,category:projectId,hours,completionBonus:reward,reward,income,incomeCurrency:currency,done:false,created:new Date().toISOString()};
+  data.tasks.unshift(task);closeMobileTaskQuickV421();render();setSyncStatus('Saving task...');const ok=await saveNow();if(!ok&&!saveConflict){data.tasks=data.tasks.filter(t=>t.id!==task.id);render();alert('The task was not saved.')}else{showGameToast?.('Task added')}
+}
+const openTaskDialogBeforeV421=openTaskDialog;
+openTaskDialog=function(templateId=null){return isMobileEditorV420()?openMobileTaskQuickV421(templateId):openTaskDialogBeforeV421(templateId)};
+
+function updateMobileTaskFabV421(){const fab=$('mobileTaskFabV421');if(!fab)return;const mobile=isMobileEditorV420(),tasks=$('tab-tasks')?.classList.contains('active'),dialog=$('mobileTaskQuickDialogV421')?.open;fab.classList.toggle('show',Boolean(mobile&&tasks&&!dialog))}
+const showTabBeforeV421=showTab;
+showTab=function(name){const result=showTabBeforeV421(name);setTimeout(updateMobileTaskFabV421,0);return result};
+const renderTasksBeforeV421=renderTasks;
+renderTasks=function(){const r=renderTasksBeforeV421();updateMobileTaskFabV421();return r};
+$('mobileTaskQuickDialogV421')?.addEventListener('close',updateMobileTaskFabV421);
+window.addEventListener('resize',updateMobileTaskFabV421,{passive:true});
+setTimeout(()=>{renderProjects();updateMobileTaskFabV421()},0);
 </script>
 
 </body></html>
