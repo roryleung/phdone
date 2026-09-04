@@ -434,7 +434,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 </section></section>
 
 <section id="tab-tasks" class="tab-panel" role="tabpanel"><section class="grid">
-<div class="card span-12 task-sheet-card"><div class="section-head"><div><h2>📝 Tasks</h2><p class="muted small">Add and edit tasks directly in the list — one row, one task.</p></div><button class="secondary task-add-top" onclick="focusNewTaskRowV416()">＋ Add task</button></div><div class="task-toolbar task-toolbar-v416"><input id="taskSearch" type="search" placeholder="🔎 Search tasks" aria-label="Search tasks" oninput="renderTasks()"><select id="taskFilter" aria-label="Filter tasks" onchange="renderTasks()"><option value="active">To do</option><option value="today">Today</option><option value="all">All</option><option value="done">Completed</option></select></div><div class="hidden"><input id="showCompleted" type="checkbox"><label id="showCompletedLabel"></label></div><div id="taskList"></div></div>
+<div class="card span-12 task-sheet-card"><div class="section-head"><div><h2>📝 Tasks</h2><p class="muted small">Your next actions, without the clutter.</p></div><button class="secondary task-add-top" onclick="openTaskDialog()">＋ New task</button></div><div class="task-toolbar task-toolbar-v416"><input id="taskSearch" type="search" placeholder="🔎 Search tasks" aria-label="Search tasks" oninput="renderTasks()"><select id="taskFilter" aria-label="Filter tasks" onchange="renderTasks()"><option value="active">To do</option><option value="today">Today</option><option value="all">All</option><option value="done">Completed</option></select></div><div class="hidden"><input id="showCompleted" type="checkbox"><label id="showCompletedLabel"></label></div><div id="taskList"></div></div>
 </section></section>
 
 <section id="tab-habits" class="tab-panel" role="tabpanel"><section class="grid">
@@ -2464,6 +2464,114 @@ renderHabitHistoryDialogV415=function(){const index=Number(habitHistoryContextV4
 // Re-apply layout enhancements whenever the full app renderer runs.
 const renderBaseV418=render;render=function(){renderBaseV418();restoreMoneyTabV418();applySheetColumnsV418('tasks');applySheetColumnsV418('habits');applySheetColumnsV418('dreams');applySheetColumnsV418('purchases');if(moneyTabV418==='transactions')applySheetColumnsV418('finance')};
 restoreMoneyTabV418();setTimeout(()=>{applySheetColumnsV418('tasks');applySheetColumnsV418('habits');applySheetColumnsV418('dreams');applySheetColumnsV418('purchases');if(moneyTabV418==='transactions')applySheetColumnsV418('finance')},250);
+</script>
+
+
+<style id="v420-mobile-task-style">
+/* PhDone v4.20 — phone-friendly Tasks: restore the pre-sheet card workflow on small screens. */
+@media(max-width:760px){
+  #tab-tasks .task-sheet-card{padding:16px 14px 20px}
+  #tab-tasks .task-sheet-card .section-head{align-items:center;gap:10px}
+  #tab-tasks .task-add-top{white-space:nowrap;padding:9px 11px}
+  #tab-tasks .task-toolbar-v416{grid-template-columns:minmax(0,1fr) 118px}
+  #tab-tasks .task{margin-top:10px}
+  #tab-tasks .task-main{min-width:0}
+  #tab-tasks .task-actions{gap:5px;flex-wrap:wrap}
+  #tab-tasks .task-actions .icon-btn{min-height:38px}
+  #tab-tasks .complete-btn{min-height:42px}
+}
+</style>
+
+<script id="v420-mobile-task-script">
+// PhDone v4.20 — desktop keeps row-first sheets; phones restore the earlier card/modal workflows.
+const mobileEditorMediaV420=window.matchMedia('(max-width: 760px)');
+function isMobileEditorV420(){return mobileEditorMediaV420.matches}
+function isTaskMobileV420(){return isMobileEditorV420()}
+
+// ---- Tasks -----------------------------------------------------------------
+const renderTasksDesktopV420=renderTasks;
+function renderTasksMobileV420(){
+  const q=($('taskSearch')?.value||'').trim().toLowerCase(),filter=$('taskFilter')?.value||'active';
+  let visible=(data.tasks||[]).filter(t=>!q||`${t.name} ${projectName(t.projectId)} ${t.date||''}`.toLowerCase().includes(q));
+  if(filter==='active')visible=visible.filter(t=>!t.done);
+  else if(filter==='today')visible=visible.filter(t=>!t.done&&t.date===today());
+  else if(filter==='done')visible=visible.filter(t=>t.done);
+  visible=[...visible].sort((a,b)=>Number(a.done)-Number(b.done)||String(a.date||'').localeCompare(String(b.date||''))||String(b.created||'').localeCompare(String(a.created||'')));
+  const host=$('taskList');if(!host)return;
+  host.innerHTML=visible.length?visible.map(t=>`<article class="task ${t.done?'done-card':''}"><div class="task-main"><div><div class="task-title-row"><button type="button" class="task-check" aria-label="${t.done?'Mark task as not complete':'Complete task'}" onclick='toggleTask(${JSON.stringify(t.id)})'>${t.done?'✓':'○'}</button><div><div class="item-title">${escapeHtml(t.name)}</div><div class="task-meta"><span class="pill neutral">${t.date===today()?'📍 Today':`📅 ${displayDate(t.date)}`}</span><span class="pill project-pill">🗂️ ${escapeHtml(projectName(t.projectId))}</span><span class="pill">⏱ ${Number(t.hours||0)}h planned</span><span class="pill gold">Finish +${money((t.completionBonus??t.reward)||0)}</span>${Number(t.income)>0?`<span class="pill good">Income ${originalMoney(t.income,t.incomeCurrency||'GBP')}</span>`:''}</div></div></div><div class="task-actions">${t.done?'':`<button class="secondary small icon-btn" onclick='openFocusTimer(${JSON.stringify(t.id)})'>▶ Focus</button><button class="ghost small icon-btn" onclick='addTaskToToday(${JSON.stringify(t.id)})'>☀️ Today</button>`}<button class="ghost small icon-btn repeat-btn" onclick='repeatTask(${JSON.stringify(t.id)})'>↻ Repeat</button><button class="ghost small icon-btn" onclick='openTaskDetails(${JSON.stringify(t.id)})'>✏️ Edit</button><button class="ghost small icon-btn" onclick='deleteTask(${JSON.stringify(t.id)})'>🗑️</button></div></div><button type="button" class="${t.done?'secondary':'primary'} complete-btn" onclick='toggleTask(${JSON.stringify(t.id)})'>${t.done?'↩ Undo':'✓ Complete'}</button></div></article>`).join(''):`<div class="empty"><strong>${q?'No matching tasks':'Your list is clear'}</strong><div class="muted small">${q?'Try a different search.':'Tap “New task” when you are ready.'}</div></div>`;
+}
+renderTasks=function(){return isMobileEditorV420()?renderTasksMobileV420():renderTasksDesktopV420()};
+const openTaskDialogDesktopV420=openTaskDialog;
+function openTaskDialogMobileV420(templateId=null){
+  $('taskName').value='';$('taskDate').value=today();$('taskHours').value='1';$('taskReward').value=Number(data.settings.completionBonus||0).toFixed(2);$('taskIncome').value='0';$('taskIncomeCurrency').value='GBP';populateProjectSelects();populateTaskQuickFill();if(templateId)quickFillTask(templateId);safeShowModal($('taskDialog'));
+}
+openTaskDialog=function(templateId=null){return isMobileEditorV420()?openTaskDialogMobileV420(templateId):openTaskDialogDesktopV420(templateId)};
+
+// ---- Habits / streaks -------------------------------------------------------
+const renderHabitsDesktopV420=renderHabits;
+function renderHabitsMobileV420(){
+  const host=$('habitList');if(!host)return;host.className='';
+  if(!data.habits.length){host.innerHTML='<div class="empty">No habits yet. Create an activity goal or abstinence streak. 🌱</div>';return}
+  host.innerHTML=data.habits.map((h,i)=>{
+    const proj=`<span class="pill project-pill">🗂️ ${escapeHtml(projectName(h.projectId))}</span>`;
+    if((h.mode||'regular')==='abstinence'){
+      h.relapseHistory=normalizeRelapses(h.relapseHistory);const days=elapsedDays(h.abstinenceStartedAt),target=Math.max(.01,Number(h.abstinenceTargetDays||7)),progress=Math.min(100,days/target*100),ready=days>=target&&!h.cycleClaimedAt,breaks=h.relapseHistory.length;
+      return `<div class="habit"><div class="row"><div><div class="item-title">🛡️ ${escapeHtml(h.name)}</div>${proj}<span class="pill good">Abstinence streak</span></div><button class="ghost right" onclick="editHabit(${i})">Edit</button></div><div class="streak-clock ${ready?'streak-safe':''}">${formatStreak(h.abstinenceStartedAt)}</div><div class="muted small">Goal: ${target} day${target===1?'':'s'} · reward ${money(h.reward)}</div><div class="habit-date-line"><span>📅</span><span>Current streak started <strong>${escapeHtml(displayDateTimeV415(h.abstinenceStartedAt))}</strong>${breaks?` · ${breaks} previous break${breaks===1?'':'s'} recorded`:''}</span></div><div class="bar"><div class="fill" style="width:${progress}%"></div></div><div class="row wrap" style="margin-top:10px">${ready?`<button class="primary" onclick="claimAbstinence(${i})">Claim ${money(h.reward)}</button>`:h.cycleClaimedAt?'<span class="success small">Milestone reward claimed</span>':`<span class="muted small">${Math.max(0,target-days).toFixed(days<1?2:1)} days remaining</span>`}<button class="secondary" onclick="openHabitHistoryV415(${i})">📅 History</button><button class="danger right" onclick="openRelapseDialog(${i})">I broke the streak</button><button class="ghost" onclick="deleteHabit(${i})">Delete</button></div></div>`;
+    }
+    h.history=normalizeHabitLogs(h.history);h.count=habitTotal(h);const cycle=habitCurrentCycle(h),cycleCount=habitCycleTotal(h,cycle),claimed=habitCycleClaimed(h,cycle),progress=Math.min(100,cycleCount/h.target*100),logs=sortedHabitLogsV415(h),latest=logs[0];
+    return `<div class="habit"><div class="row"><div><div class="item-title">${claimed?'🏅':'🔁'} ${escapeHtml(h.name)}</div>${proj}</div><button class="ghost right" onclick="editHabit(${i})">Edit</button></div><div class="muted small">${displayCountV415(cycleCount)} / ${displayCountV415(h.target)} this cycle · ${habitRecurrenceLabel(h)}</div><div class="habit-date-line"><span>📅</span><span>${latest?`Last recorded <strong>${escapeHtml(displayDate(latest.date))}</strong> · ${escapeHtml(displayCountV415(latest.count))} ${Number(latest.count)===1?'unit':'units'}${logs.length>1?` · ${logs.length} dated entries total`:''}`:'No activity date recorded yet.'}</span></div><div class="bar"><div class="fill" style="width:${progress}%"></div></div><div class="row wrap" style="margin-top:10px"><button class="secondary" onclick="openHabitLogDialog(${i})">+ Log activity</button><button class="secondary" onclick="openHabitHistoryV415(${i})">📅 History${logs.length?` (${logs.length})`:''}</button>${cycleCount>=h.target&&!claimed?`<button class="primary" onclick="claimHabit(${i})">Claim ${money(h.reward)}</button>`:claimed?'<span class="success small">Claimed</span>':`<span class="muted small">${money(h.reward)} at target</span>`}<button class="ghost right" onclick="deleteHabit(${i})">Delete</button></div></div>`;
+  }).join('');
+}
+renderHabits=function(){return isMobileEditorV420()?renderHabitsMobileV420():renderHabitsDesktopV420()};
+const openHabitDialogDesktopV420=openHabitDialog;
+openHabitDialog=function(index=null){return isMobileEditorV420()?openHabitDialogLegacyV417(index):openHabitDialogDesktopV420(index)};
+
+// ---- Dream items ------------------------------------------------------------
+const renderWishlistDesktopV420=renderWishlist;
+function renderWishlistMobileV420(){
+  const el=$('wishList');if(!el)return;el.className='dream-grid';
+  if(!data.wishList.length){el.innerHTML='<div class="empty" style="grid-column:1/-1">No future purchases yet. Add a picture of something worth working towards. 🌟</div>';return}
+  const balance=Math.max(0,totals().balance),priorityOrder={high:0,medium:1,low:2};
+  const items=data.wishList.map((w,i)=>({w,i})).sort((a,b)=>(priorityOrder[a.w.priority]??1)-(priorityOrder[b.w.priority]??1)||String(a.w.targetDate||'').localeCompare(String(b.w.targetDate||'')));
+  el.innerHTML=items.map(({w,i})=>{const price=Math.max(.01,Number(w.amount||0)),progress=Math.min(100,balance/price*100),gap=Math.max(0,price-balance),affordable=balance>=price;return`<article class="dream-card"><div class="dream-image" id="wish-image-${w.id}">${w.imagePath?'⏳':'🛍️'}</div><div class="dream-body"><div class="row"><div class="item-title">${escapeHtml(w.name)}</div><strong class="right">${money(price)}</strong></div><div><span class="pill priority-${w.priority}">${priorityLabel(w.priority)}</span><span class="pill neutral">🎯 ${displayDate(w.targetDate)}</span></div>${w.notes?`<div class="muted small dream-note">💭 ${escapeHtml(w.notes)}</div>`:''}<div><div class="row small"><span>${affordable?'🎉 You can afford this now!':`${money(gap)} still to earn`}</span><strong class="right">${Math.round(progress)}%</strong></div><div class="bar"><div class="fill" style="width:${progress}%"></div></div></div><div class="dream-actions"><button class="${affordable?'primary':'secondary'}" onclick="buyWish(${i})">${affordable?'🛍️ Buy & record':'✅ Mark purchased'}</button><button class="ghost" onclick="editWish(${i})">✏️ Edit</button><button class="ghost" onclick="deleteWish(${i})">🗑️</button></div></div></article>`}).join('');loadWishlistImages(items);
+}
+renderWishlist=function(){return isMobileEditorV420()?renderWishlistMobileV420():renderWishlistDesktopV420()};
+const openWishDialogDesktopV420=openWishDialog;
+openWishDialog=function(index=null){return isMobileEditorV420()?openWishDialogLegacyV417(index):openWishDialogDesktopV420(index)};
+
+// ---- Reward purchases -------------------------------------------------------
+const renderPurchasesDesktopV420=renderPurchases;
+function renderPurchasesMobileV420(){
+  const host=$('purchaseList');if(!host)return;host.className='';
+  if(!data.purchases.length){host.innerHTML='<div class="empty">No reward purchases yet. Your future treat is waiting. ✨</div>';return}
+  const items=data.purchases.map((p,i)=>({p,i})).sort((a,b)=>String(b.p.date||'').localeCompare(String(a.p.date||''))).slice(0,12);
+  host.innerHTML=items.map(({p,i})=>`<div class="purchase row">${p.imagePath?`<div id="purchase-image-${p.id}" class="purchase-thumb">⏳</div>`:''}<div><div class="item-title">🛍️ ${escapeHtml(p.name)}</div><div class="muted small">${displayDate(p.date)} · synced to Money</div></div><div class="right">${money(p.amount)}</div><button class="ghost" onclick="openPurchaseDialog(${i})">✏️</button><button class="ghost" onclick="deletePurchase(${i})">🗑️</button></div>`).join('');loadPurchaseImages(items);
+}
+renderPurchases=function(){return isMobileEditorV420()?renderPurchasesMobileV420():renderPurchasesDesktopV420()};
+const openPurchaseDialogDesktopV420=openPurchaseDialog;
+openPurchaseDialog=function(index=null){return isMobileEditorV420()?openPurchaseDialogLegacyV417(index):openPurchaseDialogDesktopV420(index)};
+
+// ---- Money transactions -----------------------------------------------------
+const renderFinanceDesktopV420=renderFinance;
+renderFinance=function(){return isMobileEditorV420()?renderFinanceBaseV417():renderFinanceDesktopV420()};
+const openFinanceDialogDesktopV420=openFinanceDialog;
+openFinanceDialog=function(id=null){return isMobileEditorV420()?openFinanceDialogLegacyV417(id):openFinanceDialogDesktopV420(id)};
+const repeatFinanceEntryDesktopV420=repeatFinanceEntry;
+repeatFinanceEntry=function(id){if(!isMobileEditorV420())return repeatFinanceEntryDesktopV420(id);openFinanceDialogLegacyV417();quickFillFinance(id)};
+
+function decorateEditorModeV420(){
+  const mobile=isMobileEditorV420();
+  const hb=document.querySelector('#tab-habits .section-head button');if(hb)hb.textContent=mobile?'➕ Add habit':'＋ Add row';
+  const wb=document.querySelector('#tab-rewards .card:nth-child(1) .section-head button');if(wb)wb.textContent=mobile?'➕ Add a dream':'＋ Add row';
+  const pb=document.querySelector('#tab-rewards .card:nth-child(2) .section-head button');if(pb)pb.textContent=mobile?'➕ Add purchase':'＋ Add row';
+  const hp=document.querySelector('#tab-habits .section-head p');if(hp)hp.textContent=mobile?'Track flexible activity goals or abstinence streaks in one place.':'Add or edit the main fields directly in rows; dated history is one click away.';
+  const wp=document.querySelector('#tab-rewards .card:nth-child(1) .section-head p');if(wp)wp.textContent=mobile?'Keep a visual wish list. Nothing is deducted until you buy it.':'Add dream items directly in the list. Pictures are optional and can be attached from the row.';
+  const pp=document.querySelector('#tab-rewards .card:nth-child(2) .section-head p');if(pp)pp.textContent=mobile?'Purchases are deducted from your reward balance and synced automatically to Money.':'Record reward purchases in one row; they sync to Money automatically.';
+}
+function refreshMobileEditorsV420(){decorateEditorModeV420();renderTasks();renderHabits();renderWishlist();renderPurchases();renderFinance()}
+if(mobileEditorMediaV420.addEventListener)mobileEditorMediaV420.addEventListener('change',refreshMobileEditorsV420);
+else if(mobileEditorMediaV420.addListener)mobileEditorMediaV420.addListener(refreshMobileEditorsV420);
+decorateEditorModeV420();
 </script>
 
 </body></html>
