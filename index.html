@@ -261,7 +261,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 </style>
 
 <style id="v412Styles">
-/* PhDone v4.12 — two-hour Party Board */
+/* PhDone v4.23 — weekly Monday 00:00 UTC Party Board */
 .board-cycle-chip{display:inline-flex;align-items:center;gap:6px;margin-top:5px;padding:4px 8px;border:1px solid rgba(180,170,210,.22);border-radius:999px;background:rgba(255,255,255,.055);color:#d5cede;font-size:.68rem;font-weight:800;white-space:nowrap}
 .board-cycle-chip strong{color:#fff}.board-cycle-chip .cycle-dot{width:6px;height:6px;border-radius:50%;background:#a992ff;box-shadow:0 0 0 3px rgba(169,146,255,.13)}
 .game-tile.type-choice{background:linear-gradient(145deg,#fff0c9,#f1dda2);border-color:#e4c573}.game-tile.type-event{background:linear-gradient(145deg,#ebe2ff,#dcd0f8);border-color:#c6b1ef}.game-tile.type-bad_luck{background:linear-gradient(145deg,#f7ddd9,#efc1bb);border-color:#e49d94}.game-tile.type-lucky{background:linear-gradient(145deg,#ddf3e7,#c8e9d8);border-color:#a9d8bf}.game-tile.type-normal{background:linear-gradient(145deg,#eeece7,#e5e2db);border-color:#d8d3c8}.game-tile.type-normal .tile-icon{font-size:1.15rem;color:#9e98a3;opacity:.72}.game-tile.type-event .tile-icon,.game-tile.type-choice .tile-icon{filter:drop-shadow(0 2px 3px rgba(0,0,0,.10))}
@@ -1713,20 +1713,25 @@ renderGameBoard=function(){renderGameBoardBaseV411();const details=document.quer
 try{ensureGameContentV411();renderWeeklyProgressV411();renderWeeklyQuestV411()}catch(error){console.warn('v4.11 weekly upgrade will retry after data load',error)}
 
 
-// PhDone v4.12 — two-hour Party Board + NPC image avatars -------------------
-const V412_BOARD_CYCLE_MS=2*60*60*1000;
-let v412LastSeenCycle=Math.floor(Date.now()/V412_BOARD_CYCLE_MS);
-function gameBoardCycleV412(now=Date.now()){return Math.floor(Number(now)/V412_BOARD_CYCLE_MS)}
-function boardCycleRemainingV412(now=Date.now()){
-  const next=(gameBoardCycleV412(now)+1)*V412_BOARD_CYCLE_MS,ms=Math.max(0,next-now),mins=Math.max(0,Math.ceil(ms/60000)),h=Math.floor(mins/60),m=mins%60;
-  return h?`${h}h ${m}m`:`${m}m`;
+// PhDone v4.23 — weekly Monday 00:00 UTC Party Board + NPC image avatars -------
+const V423_DAY_MS=24*60*60*1000;
+const V423_BOARD_WEEK_MS=7*V423_DAY_MS;
+const V423_MONDAY_SHIFT_MS=3*V423_DAY_MS; // Unix epoch was Thursday; +3 days aligns cycle boundaries to Monday 00:00 UTC.
+function gameBoardWeekV423(now=Date.now()){return Math.floor((Number(now)+V423_MONDAY_SHIFT_MS)/V423_BOARD_WEEK_MS)}
+function nextBoardRefreshV423(now=Date.now()){return (gameBoardWeekV423(now)+1)*V423_BOARD_WEEK_MS-V423_MONDAY_SHIFT_MS}
+let v423LastSeenWeek=gameBoardWeekV423();
+function boardRefreshRemainingV423(now=Date.now()){
+  const ms=Math.max(0,nextBoardRefreshV423(now)-Number(now)),mins=Math.max(0,Math.ceil(ms/60000)),days=Math.floor(mins/1440),hours=Math.floor((mins%1440)/60),m=mins%60;
+  if(days)return `${days}d ${hours}h`;
+  if(hours)return `${hours}h ${m}m`;
+  return `${m}m`;
 }
-function boardTileHashV412(tile,cycle=gameBoardCycleV412()){
-  tile=Number(tile||0);cycle=Number(cycle||0);
-  return Math.abs(tile*97+(tile%29)*53+((tile*tile)%101)*17+cycle*31+(cycle%37)*tile*7)%100;
+function boardTileHashV423(tile,week=gameBoardWeekV423()){
+  tile=Number(tile||0);week=Number(week||0);
+  return Math.abs(tile*97+(tile%29)*53+((tile*tile)%101)*17+week*31+(week%37)*tile*7)%100;
 }
 gameTileType=function(tile){
-  tile=Number(tile||0);if(tile<=0)return'normal';if(tile%50===0)return'checkpoint';const n=boardTileHashV412(tile);
+  tile=Number(tile||0);if(tile<=0)return'normal';if(tile%50===0)return'checkpoint';const n=boardTileHashV423(tile);
   if(n<8)return'sticker';if(n<19)return'box';if(n<28)return'minigame';if(n<34)return'duel';if(n<40)return'snake';if(n<46)return'ladder';if(n<58)return'choice';if(n<80)return'event';return'normal';
 };
 myBoardPressureV411=function(){
@@ -1734,7 +1739,7 @@ myBoardPressureV411=function(){
   if(leader?.racer_id===me.racer_id){const gap=Math.max(0,me.position-Number(second?.position||0)),rate=gap>=75?55:gap>=50?44:gap>=30?32:gap>=15?18:0;return{mode:rate?'leader':'normal',gap,rate}}
   const gap=Math.max(0,Number(leader?.position||0)-me.position),rate=gap>=75?34:gap>=50?25:gap>=30?17:gap>=15?10:0;return{mode:rate?'catchup':'normal',gap,rate};
 };
-pressureHashV411=function(tile,gap){return Math.abs(Number(tile||0)*41+Math.floor(Number(gap||0)/5)*17+gameBoardCycleV412()*23+13)%100};
+pressureHashV411=function(tile,gap){return Math.abs(Number(tile||0)*41+Math.floor(Number(gap||0)/5)*17+gameBoardWeekV423()*23+13)%100};
 gameDisplayTileTypeV411=function(tile){
   const base=gameTileType(tile),p=myBoardPressureV411();if(!p.rate||!['normal','sticker','event'].includes(base))return base;
   return pressureHashV411(tile,p.gap)<p.rate?(p.mode==='leader'?'bad_luck':'lucky'):base;
@@ -1754,23 +1759,23 @@ hydrateGameAvatars=async function(){
 };
 
 function renderBoardCycleStatusV412(home=false){
-  const text=`Board shifts in ${boardCycleRemainingV412()} · NPC turn at shift`;
-  if(home){const host=$('homeGameMeta');if(!host)return;host.querySelector?.('.v412-inline-cycle')?.remove();host.insertAdjacentHTML('beforeend',` <span class="v412-inline-cycle">· 🔄 ${escapeHtml(boardCycleRemainingV412())}</span>`);return}
-  const host=$('gameRollLabel');if(!host)return;let chip=$('gameBoardCycleV412');if(!chip){chip=document.createElement('div');chip.id='gameBoardCycleV412';chip.className='board-cycle-chip';host.appendChild(chip)}chip.innerHTML=`<span class="cycle-dot"></span><span>Board shifts in <strong>${escapeHtml(boardCycleRemainingV412())}</strong> · NPCs act each shift</span>`;
+  const remaining=boardRefreshRemainingV423();
+  if(home){const host=$('homeGameMeta');if(!host)return;host.querySelector?.('.v412-inline-cycle')?.remove();host.insertAdjacentHTML('beforeend',` <span class="v412-inline-cycle">· 🔄 Mon 00:00 GMT · ${escapeHtml(remaining)}</span>`);return}
+  const host=$('gameRollLabel');if(!host)return;let chip=$('gameBoardCycleV412');if(!chip){chip=document.createElement('div');chip.id='gameBoardCycleV412';chip.className='board-cycle-chip';host.appendChild(chip)}chip.innerHTML=`<span class="cycle-dot"></span><span>Board refreshes <strong>Monday 00:00 GMT</strong> · ${escapeHtml(remaining)} remaining</span>`;
 }
 const renderLongGameBaseV412=renderLongGame;
 renderLongGame=function(){renderLongGameBaseV412();if(longGame.me&&!longGame.setupMissing)renderBoardCycleStatusV412(false)};
 const renderHomeLongGameBaseV412=renderHomeLongGame;
 renderHomeLongGame=function(){renderHomeLongGameBaseV412();if(longGame.me&&!longGame.setupMissing)renderBoardCycleStatusV412(true)};
 const renderGameBoardBaseV412=renderGameBoard;
-renderGameBoard=function(){renderGameBoardBaseV412();const details=document.querySelector('#tab-game .game-legend');if(details&&!details.querySelector('[data-v412-cycle]'))details.insertAdjacentHTML('beforeend','<span data-v412-cycle>🔄 board reshuffles every 2h · checkpoints stay fixed</span>')};
+renderGameBoard=function(){renderGameBoardBaseV412();const details=document.querySelector('#tab-game .game-legend');if(details&&!details.querySelector('[data-v412-cycle]'))details.insertAdjacentHTML('beforeend','<span data-v412-cycle>🔄 board reshuffles Mondays 00:00 GMT · checkpoints stay fixed</span>')};
 
 async function handleBoardCycleTickV412(){
-  renderBoardCycleStatusV412(false);renderBoardCycleStatusV412(true);const cycle=gameBoardCycleV412();if(cycle===v412LastSeenCycle)return;v412LastSeenCycle=cycle;
-  if(!currentUser)return;showGameToast('Board reshuffled — NPCs are taking their turn.');
+  renderBoardCycleStatusV412(false);renderBoardCycleStatusV412(true);const week=gameBoardWeekV423();if(week===v423LastSeenWeek)return;v423LastSeenWeek=week;
+  if(!currentUser)return;showGameToast('New week — the Party Board has refreshed.');
   if(longGame.me){renderGameBoard();renderGameTrack($('homeGameTrack'),true);document.querySelectorAll('.game-tile').forEach(t=>{t.classList.add('board-shift-pulse');setTimeout(()=>t.classList.remove('board-shift-pulse'),850)});await loadLongGameState(false)}
 }
-setInterval(()=>{handleBoardCycleTickV412().catch(error=>console.warn('Board cycle refresh skipped',error))},30000);
+setInterval(()=>{handleBoardCycleTickV412().catch(error=>console.warn('Weekly board refresh skipped',error))},30000);
 
 
 // PhDone v4.14 - harder party minigames + dramatic dice ----------------------
