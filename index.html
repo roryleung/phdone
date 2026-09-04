@@ -2205,16 +2205,17 @@ function taskAddRowHtmlV416(){
     <div class="task-sheet-cell"><div class="task-sheet-actions"><button class="primary task-add-inline" type="button" onclick="addInlineTaskV416()">Add</button></div></div>
   </div>`
 }
+function taskCompletedTodayV424(t){return Boolean(t?.done&&String(t.completedLocalDate||dateOnly(t.completedAt)||'')===today())}
 renderTasks=function(){
   const q=($('taskSearch')?.value||'').trim().toLowerCase(),filter=$('taskFilter')?.value||'active';
   let visible=(data.tasks||[]).filter(t=>!q||`${t.name} ${projectName(t.projectId)} ${t.date||''}`.toLowerCase().includes(q));
-  if(filter==='active')visible=visible.filter(t=>!t.done);else if(filter==='today')visible=visible.filter(t=>!t.done&&t.date===today());else if(filter==='done')visible=visible.filter(t=>t.done);
+  if(filter==='active')visible=visible.filter(t=>!t.done||taskCompletedTodayV424(t));else if(filter==='today')visible=visible.filter(t=>(!t.done&&t.date===today())||taskCompletedTodayV424(t));else if(filter==='done')visible=visible.filter(t=>t.done);
   visible=[...visible].sort((a,b)=>Number(a.done)-Number(b.done)||String(a.date||'').localeCompare(String(b.date||''))||String(b.created||'').localeCompare(String(a.created||'')));
   const host=$('taskList');if(!host)return;
   const header=`<div class="task-sheet-head"><div class="task-col-check" title="Complete"></div><div class="task-col-name">Task</div><div>Project</div><div>Due</div><div>Hours</div><div>Finish £</div><div>Income</div><div>Actions</div></div>`;
   const empty=!visible.length?`<div class="task-sheet-empty">${q?'No tasks match this search.':filter==='done'?'No completed tasks yet.':'No tasks here yet — use the row below to add one.'}</div>`:'';
   const add=filter==='done'?'':taskAddRowHtmlV416();
-  host.innerHTML=`<div class="task-sheet-wrap">${header}${visible.map(taskRowHtmlV416).join('')}${empty}${add}</div><div class="task-sheet-footer"><span>Edit any cell directly.</span>${filter==='done'?'<button class="ghost small" onclick="focusNewTaskRowV416()">＋ Add a to-do</button>':'<span><kbd>Enter</kbd> on the new row adds it · <kbd>Tab</kbd> moves across columns</span>'}</div>`
+  host.innerHTML=`<div class="task-sheet-wrap">${header}${visible.map(taskRowHtmlV416).join('')}${empty}${add}</div><div class="task-sheet-footer"><span>Edit any cell directly. Completed today stays visible until tomorrow.</span>${filter==='done'?'<button class="ghost small" onclick="focusNewTaskRowV416()">＋ Add a to-do</button>':'<span><kbd>Enter</kbd> on the new row adds it · <kbd>Tab</kbd> moves across columns</span>'}</div>`
 };
 function updateTaskFieldV416(id,field,value){
   const t=(data.tasks||[]).find(x=>x.id===id);if(!t)return;
@@ -2480,6 +2481,8 @@ restoreMoneyTabV418();setTimeout(()=>{applySheetColumnsV418('tasks');applySheetC
   #tab-tasks .task-add-top{white-space:nowrap;padding:9px 11px}
   #tab-tasks .task-toolbar-v416{grid-template-columns:minmax(0,1fr) 118px}
   #tab-tasks .task{margin-top:10px}
+  #tab-tasks .task.done-card .item-title{text-decoration:line-through;text-decoration-thickness:1.5px;color:var(--muted)}
+  #tab-tasks .task.done-card .task-meta{opacity:.78}
   #tab-tasks .task-main{min-width:0}
   #tab-tasks .task-actions{gap:5px;flex-wrap:wrap}
   #tab-tasks .task-actions .icon-btn{min-height:38px}
@@ -2498,8 +2501,8 @@ const renderTasksDesktopV420=renderTasks;
 function renderTasksMobileV420(){
   const q=($('taskSearch')?.value||'').trim().toLowerCase(),filter=$('taskFilter')?.value||'active';
   let visible=(data.tasks||[]).filter(t=>!q||`${t.name} ${projectName(t.projectId)} ${t.date||''}`.toLowerCase().includes(q));
-  if(filter==='active')visible=visible.filter(t=>!t.done);
-  else if(filter==='today')visible=visible.filter(t=>!t.done&&t.date===today());
+  if(filter==='active')visible=visible.filter(t=>!t.done||taskCompletedTodayV424(t));
+  else if(filter==='today')visible=visible.filter(t=>(!t.done&&t.date===today())||taskCompletedTodayV424(t));
   else if(filter==='done')visible=visible.filter(t=>t.done);
   visible=[...visible].sort((a,b)=>Number(a.done)-Number(b.done)||String(a.date||'').localeCompare(String(b.date||''))||String(b.created||'').localeCompare(String(a.created||'')));
   const host=$('taskList');if(!host)return;
@@ -2734,3 +2737,5 @@ setTimeout(()=>{renderProjects();updateMobileTaskFabV421()},0);
 </script>
 
 </body></html>
+
+<!-- PhDone v4.24: completed tasks remain visible in Current/Today for their completion day. -->
