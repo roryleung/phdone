@@ -2,12 +2,14 @@
   "id": "./",
   "name": "PhDone Reward Bank",
   "short_name": "PhDone",
-  "description": "A productivity and personal-finance app with focus rewards, planning, trends and The Long Game multiplayer board.",
+  "description": "Personal focus, tasks, habits, rewards, money and Long Game tracking.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#121d4d",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#f7f5ff",
+  "theme_color": "#6c4cff",
+  "orientation": "any",
   "icons": [
     {
       "src": "icons/phdone-192-v4.png",
