@@ -2,11 +2,15 @@
   "id": "./",
   "name": "PhDone Reward Bank",
   "short_name": "PhDone",
-  "description": "Personal focus, tasks, habits, rewards, money and Long Game tracking",
-  "start_url": "./index.html",
+  "description": "Personal focus, tasks, habits, rewards, money and Long Game tracking.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#f7f5ff",
   "theme_color": "#6c4cff",
   "orientation": "any",
@@ -29,5 +33,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
