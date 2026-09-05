@@ -8,7 +8,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PhDone" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="application-name" content="PhDone" />
+  <meta name="description" content="PhDone is a personal focus, task, habit, reward and Long Game tracker." />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32-v4.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/phdone-192-v4.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180-v4.png" />
@@ -453,7 +455,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 <button class="more-link" onclick="showTab('money')"><span class="more-icon">💷</span><strong>Money</strong><small>Income, spending, savings and reports</small></button>
 <button class="more-link" onclick="showTab('progress')"><span class="more-icon">🏛️</span><strong>Progress</strong><small>Lifetime XP and milestone rewards</small></button>
 <button class="more-link" onclick="showTab('settings')"><span class="more-icon">⚙️</span><strong>Settings</strong><small>Projects, rewards, stickers and account</small></button>
-<button id="installAppButton" class="more-link hidden" onclick="installPhDone()"><span class="more-icon">📲</span><strong>Install PhDone</strong><small>Add the app to this device</small></button>
+<button id="installAppButton" class="more-link" onclick="installPhDone()"><span class="more-icon">📲</span><strong>Install PhDone</strong><small>Add the app to this device</small></button>
 <button id="adminDashboardButton" class="more-link hidden" onclick="location.href='admin.html'"><span class="more-icon">🛡️</span><strong>Admin dashboard</strong><small>Accounts and system stickers</small></button>
 <button class="more-link" onclick="logout()"><span class="more-icon">🚪</span><strong>Log out</strong><small>Sign out of this device</small></button>
 </div></div>
@@ -1355,7 +1357,7 @@ let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;$('installAppButton')?.classList.remove('hidden')});
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')});
 async function installPhDone(){if(!deferredInstallPrompt){alert('On Android, open your browser menu and choose “Install app” or “Add to Home screen”.');return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')}
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(error=>console.warn('Service worker registration failed',error)));
+// v4.25 registers the service worker after the full app has parsed.
 let authBootstrapTokenV411=0;
 async function bootstrapAuthenticatedSessionV411(user,{recovery=false}={}){
   const token=++authBootstrapTokenV411;
@@ -2736,6 +2738,151 @@ window.addEventListener('resize',updateMobileTaskFabV421,{passive:true});
 setTimeout(()=>{renderProjects();updateMobileTaskFabV421()},0);
 </script>
 
+
+
+<style id="v425ChromePwaStyles">
+/* PhDone v4.25 — Chrome/PWA hardening. */
+.focus-dock-v417{
+  z-index:2147483000!important;
+  -webkit-backdrop-filter:blur(16px);
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+  isolation:isolate;
+  contain:layout paint;
+}
+.focus-dock-v417.v425-visible{display:block!important;visibility:visible!important;opacity:1!important}
+#focusVideoPipV425{position:fixed;left:-10000px;top:-10000px;width:2px;height:2px;opacity:.001;pointer-events:none}
+.pwa-install-note-v425{display:block;margin-top:4px;color:var(--muted);font-size:.72rem;font-weight:600}
+@media(max-width:760px){.focus-dock-v417{left:10px!important;right:10px!important;width:auto!important;max-width:none!important}}
+</style>
+<script>
+// PhDone v4.25 — Chrome installability + resilient Focus dock/PiP fallback ----
+const PHDONE_VERSION_V425='4.25';
+let focusVideoPipV425=null,focusVideoCanvasV425=null,focusVideoCtxV425=null,focusVideoStreamV425=null;
+
+function isStandaloneV425(){
+  return Boolean(window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true);
+}
+function isChromiumV425(){
+  const ua=navigator.userAgent||'';
+  return /Chrome|Chromium|CriOS|Edg\//.test(ua)&&!/Firefox|FxiOS/.test(ua);
+}
+function focusVideoPipSupportedV425(){
+  return Boolean(document.pictureInPictureEnabled&&HTMLVideoElement?.prototype?.requestPictureInPicture&&HTMLCanvasElement?.prototype?.captureStream);
+}
+function focusAlwaysOnTopSupportedV425(){
+  return Boolean('documentPictureInPicture' in window||focusVideoPipSupportedV425());
+}
+function focusVideoPipActiveV425(){return Boolean(focusVideoPipV425&&document.pictureInPictureElement===focusVideoPipV425)}
+
+function ensureFocusDockV425(){
+  let dock=document.getElementById('focusDockV417');
+  if(dock)return dock;
+  dock=document.createElement('div');
+  dock.id='focusDockV417';dock.className='focus-dock-v417 hidden';dock.setAttribute('aria-live','polite');
+  dock.innerHTML=`<div class="focus-dock-top-v417"><div id="focusDockTimeV417" class="focus-dock-time-v417">00:00</div><div class="focus-dock-copy-v417"><strong id="focusDockTaskV417">General focus</strong><small id="focusDockProjectV417">Focus timer</small></div><span id="focusDockStatusV417" class="focus-dock-status-v417"><span class="focus-dock-dot-v417"></span><span>Running</span></span></div><div class="focus-dock-actions-v417"><button id="focusDockToggleV417" type="button" class="secondary" onclick="toggleFocusTimer()">Pause</button><button type="button" class="ghost" onclick="openFocusTimer()">Open</button><button id="focusDockPinV417" type="button" class="ghost" onclick="toggleFocusPipV417()">📌 Always on top</button><button id="focusDockSaveV417" type="button" class="ghost" onclick="finishFocusSession(false)">Save</button></div>`;
+  document.body.appendChild(dock);return dock;
+}
+
+const renderFocusDockBeforeV425=typeof renderFocusDockV417==='function'?renderFocusDockV417:null;
+renderFocusDockV417=function(){
+  const dock=ensureFocusDockV425(),active=Boolean(typeof focusActiveV417==='function'?focusActiveV417():(focusRuntime?.running||focusElapsedSec?.()>0));
+  dock.classList.toggle('hidden',!active);dock.classList.toggle('v425-visible',active);dock.style.display=active?'block':'none';
+  if(!active){
+    if(focusPipWindowV417&&!focusPipWindowV417.closed)focusPipWindowV417.close();
+    if(focusVideoPipActiveV425())document.exitPictureInPicture?.().catch(()=>{});
+    return;
+  }
+  try{
+    const task=focusTask(),running=Boolean(focusRuntime.running),sec=typeof focusDisplaySecondsV417==='function'?focusDisplaySecondsV417():focusElapsedSec();
+    const time=document.getElementById('focusDockTimeV417'),name=document.getElementById('focusDockTaskV417'),project=document.getElementById('focusDockProjectV417');
+    if(time)time.textContent=formatTimer(sec);if(name)name.textContent=task?.name||'General focus';if(project)project.textContent=task?.projectId?projectName(task.projectId):(focusMode()==='stopwatch'?'Open-ended Focus':'Countdown Focus');
+    const status=document.getElementById('focusDockStatusV417');if(status){status.classList.toggle('paused',!running);const text=status.querySelector('span:last-child');if(text)text.textContent=running?'Running':focusRuntime.resumePromptPending?'Paused after device/app closed':'Paused'}
+    const toggle=document.getElementById('focusDockToggleV417'),save=document.getElementById('focusDockSaveV417'),pin=document.getElementById('focusDockPinV417');
+    if(toggle)toggle.textContent=running?'Ⅱ Pause':'▶ Resume';if(save)save.disabled=focusElapsedSec()<30;
+    const supported=focusAlwaysOnTopSupportedV425();if(pin){pin.classList.toggle('focus-pip-unsupported-v417',!supported);pin.hidden=!supported;pin.textContent=(focusPipWindowV417&&!focusPipWindowV417.closed)||focusVideoPipActiveV425()?'📍 Unpin':'📌 Always on top'}
+    renderFocusPipV417?.();drawFocusVideoPipV425();
+  }catch(error){console.warn('Focus dock render recovered in v4.25',error)}
+};
+
+function ensureFocusVideoPipV425(){
+  if(focusVideoPipV425)return focusVideoPipV425;
+  focusVideoCanvasV425=document.createElement('canvas');focusVideoCanvasV425.width=640;focusVideoCanvasV425.height=360;focusVideoCtxV425=focusVideoCanvasV425.getContext('2d');
+  focusVideoStreamV425=focusVideoCanvasV425.captureStream(2);
+  focusVideoPipV425=document.createElement('video');focusVideoPipV425.id='focusVideoPipV425';focusVideoPipV425.muted=true;focusVideoPipV425.playsInline=true;focusVideoPipV425.srcObject=focusVideoStreamV425;document.body.appendChild(focusVideoPipV425);
+  focusVideoPipV425.addEventListener('leavepictureinpicture',()=>renderFocusDockV417());return focusVideoPipV425;
+}
+function fitCanvasTextV425(ctx,text,maxWidth,startSize,minSize=20){let size=startSize;do{ctx.font=`800 ${size}px Inter,system-ui,sans-serif`;if(ctx.measureText(text).width<=maxWidth)break;size-=2}while(size>minSize);return size}
+function drawFocusVideoPipV425(){
+  if(!focusVideoCanvasV425||!focusVideoCtxV425)return;const c=focusVideoCanvasV425,ctx=focusVideoCtxV425,task=focusTask?.(),running=Boolean(focusRuntime?.running),sec=typeof focusDisplaySecondsV417==='function'?focusDisplaySecondsV417():focusElapsedSec?.()||0;
+  ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#f8f7fc';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#6c4cff';ctx.fillRect(0,0,12,c.height);
+  ctx.fillStyle='#20213a';const title=task?.name||'General focus';fitCanvasTextV425(ctx,title,560,34);ctx.fillText(title,42,62);
+  ctx.fillStyle='#5034c9';ctx.font='900 104px Inter,system-ui,sans-serif';ctx.fillText(formatTimer(sec),42,194);
+  ctx.fillStyle=running?'#07875f':'#6d6d83';ctx.font='800 28px Inter,system-ui,sans-serif';ctx.fillText(running?'● RUNNING':'Ⅱ PAUSED',44,252);
+  ctx.fillStyle='#6d6d83';ctx.font='600 24px Inter,system-ui,sans-serif';ctx.fillText(task?.projectId?projectName(task.projectId):(focusMode()==='stopwatch'?'Open-ended Focus':'Countdown Focus'),44,304);
+}
+async function openFocusVideoPipV425(){
+  if(!focusVideoPipSupportedV425())throw new Error('Video Picture-in-Picture is unavailable');
+  const video=ensureFocusVideoPipV425();drawFocusVideoPipV425();await video.play();await video.requestPictureInPicture();renderFocusDockV417();
+}
+
+const renderFocusPipBeforeV425=typeof renderFocusPipV417==='function'?renderFocusPipV417:null;
+renderFocusPipV417=function(){try{renderFocusPipBeforeV425?.()}catch{}drawFocusVideoPipV425()};
+
+toggleFocusPipV417=async function(){
+  if(focusPipWindowV417&&!focusPipWindowV417.closed){focusPipWindowV417.close();focusPipWindowV417=null;renderFocusDockV417();return}
+  if(focusVideoPipActiveV425()){await document.exitPictureInPicture().catch(()=>{});renderFocusDockV417();return}
+  if('documentPictureInPicture' in window){
+    try{
+      const pip=await window.documentPictureInPicture.requestWindow({width:340,height:205});focusPipWindowV417=pip;pip.document.title='PhDone Focus';
+      pip.document.body.innerHTML=`<main id="pipFocus"><div id="pipTask"></div><div id="pipTime"></div><div id="pipState"></div><div class="actions"><button id="pipToggle"></button><button id="pipOpen">Open PhDone</button></div></main>`;
+      const st=pip.document.createElement('style');st.textContent=`*{box-sizing:border-box}body{margin:0;background:#f8f7fc;color:#211b38;font-family:Inter,system-ui,sans-serif}main{padding:17px;text-align:center}#pipTask{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pipTime{font-size:3.2rem;font-weight:950;letter-spacing:-.07em;color:#563bd2;margin:7px 0}#pipState{color:#746e83;font-size:.82rem}.actions{display:flex;gap:7px;margin-top:12px}.actions button{flex:1;border:0;border-radius:10px;padding:9px;background:#ebe7ff;color:#5137c8;font-weight:800;cursor:pointer}.actions button:first-child{background:#6848ee;color:#fff}`;pip.document.head.appendChild(st);
+      pip.document.getElementById('pipToggle').addEventListener('click',()=>toggleFocusTimer());pip.document.getElementById('pipOpen').addEventListener('click',()=>{window.focus();openFocusTimer()});pip.addEventListener('pagehide',()=>{focusPipWindowV417=null;renderFocusDockV417()},{once:true});renderFocusPipV417();renderFocusDockV417();return;
+    }catch(error){console.warn('Document Picture-in-Picture failed; trying Chrome video PiP fallback',error)}
+  }
+  if(focusVideoPipSupportedV425()){
+    try{await openFocusVideoPipV425();return}catch(error){console.warn('Video Picture-in-Picture fallback failed',error)}
+  }
+  alert('Always-on-top Focus needs a supported desktop browser and a secure HTTPS page. The Focus clock will still stay pinned inside PhDone.');
+};
+
+// Render the dock after ordinary app renders too. This prevents a Chrome/PWA
+// repaint or route change from leaving an active Focus session visually hidden.
+const renderBeforeV425=render;
+render=function(){const result=renderBeforeV425();queueMicrotask(()=>renderFocusDockV417());return result};
+window.addEventListener('focus',()=>setTimeout(renderFocusDockV417,0));
+window.addEventListener('pageshow',()=>setTimeout(renderFocusDockV417,0));
+window.addEventListener('resize',()=>{if(focusActiveV417?.())renderFocusDockV417()},{passive:true});
+
+// Chrome PWA install UI -------------------------------------------------------
+function updateInstallUiV425(){
+  const button=document.getElementById('installAppButton');if(!button)return;
+  const installed=isStandaloneV425();button.classList.toggle('hidden',installed);button.hidden=installed;
+  const small=button.querySelector('small');
+  if(small)small.textContent=deferredInstallPrompt?'Install as a standalone Chrome app':isChromiumV425()?'Install/open PhDone as a Chrome web app':'Add PhDone to this device';
+}
+const installPhDoneBeforeV425=installPhDone;
+installPhDone=async function(){
+  if(isStandaloneV425()){alert('PhDone is already running as an installed web app.');return}
+  if(deferredInstallPrompt){deferredInstallPrompt.prompt();const choice=await deferredInstallPrompt.userChoice;if(choice?.outcome==='accepted')deferredInstallPrompt=null;updateInstallUiV425();return}
+  if(location.protocol==='file:'){alert('Chrome cannot install a PWA opened directly from a local HTML file. Publish the v4.25 folder over HTTPS, then open that URL in Chrome.');return}
+  if(!window.isSecureContext&&location.hostname!=='localhost'){alert('Chrome web-app installation requires HTTPS. Open the HTTPS version of PhDone and try again.');return}
+  if(isChromiumV425())alert('Chrome has not offered the install prompt yet. Reload once after deploying manifest.webmanifest and sw.js, then use ⋮ → Cast, save, and share → Install PhDone if the button is not shown automatically.');
+  else installPhDoneBeforeV425?.();
+};
+window.addEventListener('beforeinstallprompt',()=>setTimeout(updateInstallUiV425,0));
+window.addEventListener('appinstalled',()=>setTimeout(updateInstallUiV425,0));
+window.matchMedia?.('(display-mode: standalone)')?.addEventListener?.('change',updateInstallUiV425);
+window.addEventListener('load',async()=>{
+  updateInstallUiV425();renderFocusDockV417();
+  if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+    try{const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});reg.update?.()}catch(error){console.warn('PhDone service worker registration failed',error)}
+  }
+});
+setTimeout(()=>{updateInstallUiV425();renderFocusDockV417()},350);
+</script>
+
 </body></html>
 
 <!-- PhDone v4.24: completed tasks remain visible in Current/Today for their completion day. -->
+<!-- PhDone v4.25: restored Chrome PWA install files and hardened persistent Focus/PiP. -->
