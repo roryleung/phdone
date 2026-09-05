@@ -1,4 +1,4 @@
-const CACHE_NAME = 'phdone-shell-v4-25';
+const CACHE_NAME = 'phdone-shell-v4-27';
 const APP_SHELL = [
   './',
   './index.html',
@@ -47,7 +47,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (url.pathname.endsWith('/manifest.webmanifest') || url.pathname.includes('/icons/')) {
+  if (url.pathname.endsWith('/manifest.webmanifest')) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then(response => {
+          if (response && response.ok) caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  if (url.pathname.includes('/icons/')) {
     event.respondWith(
       caches.match(request).then(cached => cached || fetch(request).then(response => {
         if (response && response.ok) caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
