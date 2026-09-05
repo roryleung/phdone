@@ -2,7 +2,7 @@
   "id": "./",
   "name": "PhDone Reward Bank",
   "short_name": "PhDone",
-  "description": "Personal focus, tasks, habits, rewards, money and Long Game tracking.",
+  "description": "Personal focus, tasks, habits, rewards, money and Long Game tracking",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
