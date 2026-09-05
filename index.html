@@ -2372,7 +2372,7 @@ let focusPipWindowV417=null;
 function focusDisplaySecondsV417(){return focusMode()==='stopwatch'?focusElapsedSec():focusRemainingSec()}
 function focusActiveV417(){return Boolean(focusRuntime.running||focusElapsedSec()>0)}
 function renderFocusDockV417(){const dock=$('focusDockV417');if(!dock)return;const active=focusActiveV417();dock.classList.toggle('hidden',!active);if(!active){if(focusPipWindowV417&&!focusPipWindowV417.closed)focusPipWindowV417.close();return}const task=focusTask(),running=Boolean(focusRuntime.running),sec=focusDisplaySecondsV417();$('focusDockTimeV417').textContent=formatTimer(sec);$('focusDockTaskV417').textContent=task?.name||'General focus';$('focusDockProjectV417').textContent=task?.projectId?projectName(task.projectId):(focusMode()==='stopwatch'?'Open-ended Focus':'Countdown Focus');const status=$('focusDockStatusV417');status.classList.toggle('paused',!running);status.querySelector('span:last-child').textContent=running?'Running':'Paused';$('focusDockToggleV417').textContent=running?'Ⅱ Pause':'▶ Resume';$('focusDockSaveV417').disabled=focusElapsedSec()<30;$('focusDockPinV417').classList.toggle('focus-pip-unsupported-v417',!('documentPictureInPicture'in window));$('focusDockPinV417').textContent=focusPipWindowV417&&!focusPipWindowV417.closed?'📍 Unpin':'📌 Always on top';renderFocusPipV417()}
-async function toggleFocusPipV417(){if(focusPipWindowV417&&!focusPipWindowV417.closed){focusPipWindowV417.close();focusPipWindowV417=null;renderFocusDockV417();return}if(!('documentPictureInPicture'in window)){alert('Always-on-top Focus is not supported by this Chrome version. The timer will remain pinned inside PhDone.');return}try{const pip=await window.documentPictureInPicture.requestWindow({width:340,height:205});focusPipWindowV417=pip;pip.document.title='PhDone Focus';pip.document.body.innerHTML=`<main id="pipFocus"><div id="pipTask"></div><div id="pipTime"></div><div id="pipState"></div><div class="actions"><button id="pipToggle"></button><button id="pipOpen">Open PhDone</button></div></main>`;const st=pip.document.createElement('style');st.textContent=`*{box-sizing:border-box}body{margin:0;background:#f8f7fc;color:#211b38;font-family:Inter,system-ui,sans-serif}main{padding:17px;text-align:center}#pipTask{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pipTime{font-size:3.2rem;font-weight:950;letter-spacing:-.07em;color:#563bd2;margin:7px 0}#pipState{color:#746e83;font-size:.82rem}.actions{display:flex;gap:7px;margin-top:12px}.actions button{flex:1;border:0;border-radius:10px;padding:9px;background:#ebe7ff;color:#5137c8;font-weight:800;cursor:pointer}.actions button:first-child{background:#6848ee;color:#fff}`;pip.document.head.appendChild(st);pip.document.getElementById('pipToggle').addEventListener('click',()=>toggleFocusTimer());pip.document.getElementById('pipOpen').addEventListener('click',()=>{window.focus();openFocusTimer()});pip.addEventListener('pagehide',()=>{focusPipWindowV417=null;renderFocusDockV417()},{once:true});renderFocusPipV417();renderFocusDockV417()}catch(e){console.warn('Focus always-on-top unavailable',e)}}
+async function toggleFocusPipV417(){} // implemented by the current browser-aware override below
 function renderFocusPipV417(){const pip=focusPipWindowV417;if(!pip||pip.closed)return;try{const task=focusTask(),sec=focusDisplaySecondsV417(),running=Boolean(focusRuntime.running);pip.document.getElementById('pipTask').textContent=task?.name||'General focus';pip.document.getElementById('pipTime').textContent=formatTimer(sec);pip.document.getElementById('pipState').textContent=running?(focusMode()==='stopwatch'?'Counting productive time':'Countdown running'):'Paused';pip.document.getElementById('pipToggle').textContent=running?'Pause':'Resume'}catch{}}
 const renderFocusTimerBaseV417=renderFocusTimer;
 renderFocusTimer=function(){renderFocusTimerBaseV417();renderFocusDockV417()};
@@ -2847,10 +2847,51 @@ toggleFocusPipV417=async function(){
   if(focusVideoPipActiveV425()){await document.exitPictureInPicture().catch(()=>{});renderFocusDockV417();return}
   if('documentPictureInPicture' in window){
     try{
-      const pip=await window.documentPictureInPicture.requestWindow({width:340,height:205});focusPipWindowV417=pip;pip.document.title='PhDone Focus';
-      pip.document.body.innerHTML=`<main id="pipFocus"><div id="pipTask"></div><div id="pipTime"></div><div id="pipState"></div><div class="actions"><button id="pipToggle"></button><button id="pipOpen">Open PhDone</button></div></main>`;
-      const st=pip.document.createElement('style');st.textContent=`*{box-sizing:border-box}body{margin:0;background:#f8f7fc;color:#211b38;font-family:Inter,system-ui,sans-serif}main{padding:17px;text-align:center}#pipTask{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pipTime{font-size:3.2rem;font-weight:950;letter-spacing:-.07em;color:#563bd2;margin:7px 0}#pipState{color:#746e83;font-size:.82rem}.actions{display:flex;gap:7px;margin-top:12px}.actions button{flex:1;border:0;border-radius:10px;padding:9px;background:#ebe7ff;color:#5137c8;font-weight:800;cursor:pointer}.actions button:first-child{background:#6848ee;color:#fff}`;pip.document.head.appendChild(st);
-      pip.document.getElementById('pipToggle').addEventListener('click',()=>toggleFocusTimer());pip.document.getElementById('pipOpen').addEventListener('click',()=>{window.focus();openFocusTimer()});pip.addEventListener('pagehide',()=>{focusPipWindowV417=null;renderFocusDockV417()},{once:true});renderFocusPipV417();renderFocusDockV417();return;
+      // Keep the always-on-top clock deliberately small. Document PiP windows
+      // remain user-resizable; the responsive CSS below is designed to keep the
+      // clock usable down to Chrome's own minimum window size. Remember the
+      // user's last PiP size on this device so a deliberately tiny clock stays tiny.
+      let pipWidth=260,pipHeight=135;
+      try{const saved=JSON.parse(localStorage.getItem('phdoneFocusPipSizeV428')||'null');if(saved){pipWidth=Math.max(200,Math.min(520,Number(saved.width)||260));pipHeight=Math.max(100,Math.min(360,Number(saved.height)||135))}}catch{}
+      const pip=await window.documentPictureInPicture.requestWindow({width:pipWidth,height:pipHeight});focusPipWindowV417=pip;pip.document.title='PhDone Focus';
+      pip.document.body.innerHTML=`<main id="pipFocus"><div class="pipMeta"><div id="pipTask"></div><div id="pipState"></div></div><div id="pipTime"></div><div class="actions"><button id="pipToggle"></button><button id="pipOpen">Open</button></div></main>`;
+      const st=pip.document.createElement('style');st.textContent=`
+        *{box-sizing:border-box}
+        html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f8f7fc;color:#211b38;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+        body{}
+        #pipFocus{width:100%;height:100%;padding:10px 11px 9px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"meta time" "actions actions";align-items:center;gap:7px 10px}
+        .pipMeta{grid-area:meta;min-width:0;text-align:left}
+        #pipTask{font-size:.9rem;font-weight:850;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        #pipTime{grid-area:time;font-size:2.15rem;line-height:1;font-weight:950;letter-spacing:-.065em;color:#563bd2;white-space:nowrap;font-variant-numeric:tabular-nums}
+        #pipState{margin-top:3px;color:#746e83;font-size:.7rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        #pipState:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:#079455;vertical-align:1px}
+        .actions{grid-area:actions;display:flex;gap:6px;min-width:0}
+        .actions button{min-width:0;flex:1;border:0;border-radius:9px;padding:7px 9px;line-height:1.1;background:#ebe7ff;color:#5137c8;font-size:.78rem;font-weight:850;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .actions button:first-child{background:#6848ee;color:#fff}
+        @media (max-width:240px){
+          #pipFocus{padding:8px 9px 7px;gap:5px 7px}
+          #pipTask{font-size:.8rem}
+          #pipTime{font-size:1.8rem}
+          #pipState{font-size:.63rem;margin-top:2px}
+          .actions{gap:5px}.actions button{padding:6px 7px;font-size:.72rem;border-radius:8px}
+        }
+        @media (max-height:115px){
+          #pipFocus{padding:6px 8px;gap:4px 7px}
+          #pipState{display:none}
+          #pipTask{font-size:.77rem}
+          #pipTime{font-size:1.7rem}
+          .actions button{padding:5px 7px;font-size:.68rem}
+        }
+        @media (max-width:205px){
+          #pipFocus{grid-template-columns:1fr auto;gap:4px 6px}
+          #pipTask{font-size:.72rem}
+          #pipTime{font-size:1.5rem}
+          .actions button{font-size:.65rem;padding:5px 6px}
+        }
+      `;pip.document.head.appendChild(st);
+      pip.document.getElementById('pipToggle').addEventListener('click',()=>toggleFocusTimer());pip.document.getElementById('pipOpen').addEventListener('click',()=>{window.focus();openFocusTimer()});
+      let pipResizeSaveTimerV428=null;pip.addEventListener('resize',()=>{clearTimeout(pipResizeSaveTimerV428);pipResizeSaveTimerV428=setTimeout(()=>{try{localStorage.setItem('phdoneFocusPipSizeV428',JSON.stringify({width:pip.innerWidth,height:pip.innerHeight}))}catch{}},180)});
+      pip.addEventListener('pagehide',()=>{focusPipWindowV417=null;renderFocusDockV417()},{once:true});renderFocusPipV417();renderFocusDockV417();return;
     }catch(error){console.warn('Document Picture-in-Picture failed; trying Chrome video PiP fallback',error)}
   }
   if(focusVideoPipSupportedV425()){
@@ -2897,7 +2938,7 @@ setTimeout(()=>{updateInstallUiV425();renderFocusDockV417()},350);
 
 
 <style id="v427-reorder-install-style">
-/* PhDone v4.27 — centred completion marks, manual ordering, cleaner habit log, install diagnostics. */
+/* PhDone v4.28 — centred completion marks, manual ordering, cleaner habit log, install diagnostics. */
 .task-check-v416{position:relative;overflow:hidden}
 .task-check-v416:checked::after{content:'✓';position:absolute;left:50%;top:50%;transform:translate(-50%,-53%);width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:950;font-size:14px;line-height:1;text-align:center}
 .task-check{padding:0!important;line-height:1!important;align-items:center;justify-items:center;text-align:center}
@@ -3069,4 +3110,4 @@ setTimeout(()=>{postRenderOrderV427('tasks');postRenderOrderV427('habits');postR
 <!-- PhDone v4.24: completed tasks remain visible in Current/Today for their completion day. -->
 <!-- PhDone v4.25: restored Chrome PWA install files and hardened persistent Focus/PiP. -->
 <!-- PhDone v4.26: Focus continues across backgrounding/closed tabs and reconstructs elapsed wall-clock time on return. -->
-<!-- PhDone v4.27: centred ticks, draggable user lists, cleaner habit logging and browser-aware PWA install diagnostics. -->
+<!-- PhDone v4.28: centred ticks, draggable user lists, cleaner habit logging and browser-aware PWA install diagnostics. -->
