@@ -1,22 +1,27 @@
-const CACHE = 'phdone-v4-8-20260828';
-const SHELL = [
+const CACHE_NAME = 'phdone-shell-v4-25';
+const APP_SHELL = [
+  './',
   './index.html',
-  './admin.html',
   './manifest.webmanifest',
   './icons/favicon-32-v4.png',
-  './icons/apple-touch-icon-180-v4.png',
   './icons/phdone-192-v4.png',
   './icons/phdone-512-v4.png',
-  './icons/phdone-maskable-512-v4.png'
+  './icons/phdone-maskable-512-v4.png',
+  './icons/apple-touch-icon-180-v4.png'
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('phdone-shell-') && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -31,20 +36,23 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(request, copy));
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          }
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then(hit => hit || fetch(request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE).then(cache => cache.put(request, copy));
-      return response;
-    }))
-  );
+  if (url.pathname.endsWith('/manifest.webmanifest') || url.pathname.includes('/icons/')) {
+    event.respondWith(
+      caches.match(request).then(cached => cached || fetch(request).then(response => {
+        if (response && response.ok) caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
+        return response;
+      }))
+    );
+  }
 });
