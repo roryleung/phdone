@@ -10,6 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="PhDone" />
   <meta name="application-name" content="PhDone" />
   <meta name="description" content="PhDone is a personal focus, task, habit, reward and Long Game tracker." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://yivkvurydsjseogylaxj.supabase.co" crossorigin />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32-v4.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/phdone-192-v4.png" />
@@ -300,7 +302,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 .task-toolbar-v416{display:grid;grid-template-columns:minmax(240px,1fr) 180px;gap:10px;margin-bottom:12px}
 .task-toolbar-v416 input,.task-toolbar-v416 select{min-height:44px}
 .task-sheet-wrap{border:1px solid var(--line);border-radius:15px;overflow:auto;background:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
-.task-sheet-head,.task-sheet-row{display:grid;grid-template-columns:48px minmax(300px,1.7fr) 190px 150px 100px 120px 140px 156px;min-width:1204px;align-items:stretch}
+.task-sheet-head,.task-sheet-row{display:grid;grid-template-columns:48px minmax(300px,1.7fr) 190px 150px 124px 120px 140px 156px;min-width:1228px;align-items:stretch}
 .task-sheet-head{position:sticky;top:0;z-index:8;background:#f7f7fb;border-bottom:1px solid var(--line);color:var(--muted);font-size:.72rem;font-weight:850;text-transform:uppercase;letter-spacing:.045em}
 .task-sheet-head>div{padding:9px 10px;display:flex;align-items:center;border-right:1px solid var(--line)}
 .task-sheet-head>div:last-child{border-right:0}
@@ -328,7 +330,11 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 .task-income-cell .task-cell-select{padding-left:4px!important;padding-right:2px!important;font-size:.78rem;text-align:center}
 .task-duration-v429{display:grid;grid-template-columns:minmax(42px,1fr) auto;align-items:center;gap:3px;width:100%}
 .task-duration-v429 .task-duration-input-v429{text-align:right;padding-right:4px}
-.task-duration-unit-v429{font-size:.72rem;font-weight:800;color:var(--muted);min-width:22px;text-align:left;user-select:none}
+.task-duration-unit-v429{font-size:.72rem;font-weight:800;color:var(--muted);min-width:24px;text-align:left;user-select:none}
+.task-time-head-v432{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
+.task-time-unit-toggle-v432{display:inline-flex;align-items:center;gap:1px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.task-time-unit-toggle-v432 button{padding:2px 5px;border-radius:5px;background:transparent;color:var(--muted);font-size:.62rem;line-height:1.15;font-weight:800}
+.task-time-unit-toggle-v432 button.active{background:var(--soft);color:var(--accent)}
 
 .task-check-v416{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:1.8px solid #9493a2;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;margin:0;transition:.12s}
 .task-check-v416:hover{border-color:#6848ee;box-shadow:0 0 0 3px rgba(104,72,238,.1)}
@@ -585,8 +591,8 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 </div>
 
 <dialog id="quickAddDialog"><div class="modal"><div class="section-head"><div><h2>＋ Add something</h2><p class="muted small">Choose what you want to record.</p></div><button class="ghost" onclick="quickAddDialog.close()">✕</button></div><div class="quick-actions" style="margin-top:14px"><button class="quick-action" onclick="quickAddDialog.close();openFocusTimer()"><span>⏱️</span><strong>Focus</strong><small class="muted">Start a timed session</small></button><button class="quick-action" onclick="quickAddDialog.close();openTaskDialog()"><span>📝</span><strong>Task</strong><small class="muted">Something to complete</small></button><button class="quick-action" onclick="quickAddDialog.close();openHabitDialog()"><span>🔁</span><strong>Habit</strong><small class="muted">Activity or streak</small></button><button class="quick-action" onclick="quickAddDialog.close();openWishDialog()"><span>🌟</span><strong>Dream</strong><small class="muted">Something to work towards</small></button><button class="quick-action" onclick="quickAddDialog.close();openFinanceDialog()"><span>💷</span><strong>Money</strong><small class="muted">Income or spending</small></button></div></div></dialog>
-<dialog id="taskDialog"><form method="dialog" class="modal" onsubmit="addTask(event)"><h2>➕ Add task</h2><div class="quick-fill"><div class="label">↻ Repeat something you have done before</div><select id="taskQuickFill" onchange="quickFillTask(this.value)"><option value="">Choose a recent task…</option></select></div><div class="modal-grid"><div class="full"><div class="label">Task</div><input id="taskName" required placeholder="e.g. Write thesis section"></div><div><div class="label">Date</div><input id="taskDate" class="mobile-date-fix" type="date" required></div><div><div class="label">Project</div><select id="taskProjectId"></select></div><div><div class="label">Estimated time (hours)</div><input id="taskHours" type="number" min="0.0166667" step="0.0166667" inputmode="decimal" required></div><div><div class="label">Completion bonus (£)</div><input id="taskReward" type="number" min="0" step="0.25" required></div><div><div class="label">Income generated (optional)</div><input id="taskIncome" type="number" min="0" step="0.01" value="0"></div><div><div class="label">Income currency</div><select id="taskIncomeCurrency"><option value="GBP">🇬🇧 GBP</option><option value="HKD">🇭🇰 HKD</option><option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option></select></div><div class="full"><div class="info-box small"><strong>Reward model:</strong> actual Focus Timer minutes earn at your hourly focus rate. Finishing this task adds the completion bonus above. Income is tracked separately in Money.</div></div></div><div class="row"><button type="button" class="ghost" onclick="taskDialog.close()">Cancel</button><button class="primary right">Add task</button></div></form></dialog>
-<dialog id="taskEditDialog"><form method="dialog" class="modal" onsubmit="saveTaskDetails(event)"><div class="section-head"><div><h2>✏️ Task details</h2><p id="taskEditName" class="muted small"></p></div></div><div class="modal-grid"><div><div class="label">Date</div><input id="taskEditDate" class="mobile-date-fix" type="date" required></div><div><div class="label">Project</div><select id="taskEditProject"></select></div><div><div class="label">Planned time (hours)</div><input id="taskEditHours" type="number" min="0.0166667" step="0.0166667"></div><div><div class="label">Completion bonus (£)</div><input id="taskEditReward" type="number" min="0" step="0.25" required></div><div><div class="label">Income generated</div><input id="taskEditIncome" type="number" min="0" step="0.01"></div><div><div class="label">Income currency</div><select id="taskEditCurrency"><option value="GBP">🇬🇧 GBP</option><option value="HKD">🇭🇰 HKD</option><option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option></select></div></div><div class="row"><button type="button" class="ghost" onclick="taskEditDialog.close()">Cancel</button><button class="primary right">Save changes</button></div></form></dialog>
+<dialog id="taskDialog"><form method="dialog" class="modal" onsubmit="addTask(event)"><h2>➕ Add task</h2><div class="quick-fill"><div class="label">↻ Repeat something you have done before</div><select id="taskQuickFill" onchange="quickFillTask(this.value)"><option value="">Choose a recent task…</option></select></div><div class="modal-grid"><div class="full"><div class="label">Task</div><input id="taskName" required placeholder="e.g. Write thesis section"></div><div><div class="label">Date</div><input id="taskDate" class="mobile-date-fix" type="date" required></div><div><div class="label">Project</div><select id="taskProjectId"></select></div><div><div class="label">Estimated time (hours)</div><input id="taskHours" type="number" min="0.0166667" step="any" inputmode="decimal" required></div><div><div class="label">Completion bonus (£)</div><input id="taskReward" type="number" min="0" step="0.25" required></div><div><div class="label">Income generated (optional)</div><input id="taskIncome" type="number" min="0" step="0.01" value="0"></div><div><div class="label">Income currency</div><select id="taskIncomeCurrency"><option value="GBP">🇬🇧 GBP</option><option value="HKD">🇭🇰 HKD</option><option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option></select></div><div class="full"><div class="info-box small"><strong>Reward model:</strong> actual Focus Timer minutes earn at your hourly focus rate. Finishing this task adds the completion bonus above. Income is tracked separately in Money.</div></div></div><div class="row"><button type="button" class="ghost" onclick="taskDialog.close()">Cancel</button><button class="primary right">Add task</button></div></form></dialog>
+<dialog id="taskEditDialog"><form method="dialog" class="modal" onsubmit="saveTaskDetails(event)"><div class="section-head"><div><h2>✏️ Task details</h2><p id="taskEditName" class="muted small"></p></div></div><div class="modal-grid"><div><div class="label">Date</div><input id="taskEditDate" class="mobile-date-fix" type="date" required></div><div><div class="label">Project</div><select id="taskEditProject"></select></div><div><div class="label">Planned time (hours)</div><input id="taskEditHours" type="number" min="0.0166667" step="any"></div><div><div class="label">Completion bonus (£)</div><input id="taskEditReward" type="number" min="0" step="0.25" required></div><div><div class="label">Income generated</div><input id="taskEditIncome" type="number" min="0" step="0.01"></div><div><div class="label">Income currency</div><select id="taskEditCurrency"><option value="GBP">🇬🇧 GBP</option><option value="HKD">🇭🇰 HKD</option><option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option></select></div></div><div class="row"><button type="button" class="ghost" onclick="taskEditDialog.close()">Cancel</button><button class="primary right">Save changes</button></div></form></dialog>
 <dialog id="habitDialog"><form method="dialog" class="modal" onsubmit="saveHabit(event)"><h2 id="habitDialogTitle">🔁 Add flexible habit</h2><p class="muted small">Set any target you like. A habit can happen irregularly, on past dates, or several times on the same day.</p><div class="modal-grid"><div class="full"><div class="label">Habit</div><input id="habitName" required placeholder="e.g. Gym, laundry, read a paper"></div><div><div class="label">Project</div><select id="habitProjectId"></select></div><div><div class="label">Habit type</div><select id="habitMode" onchange="updateHabitModeFields()"><option value="regular">🔁 Activity goal</option><option value="abstinence">🛡️ Abstinence streak</option></select></div><div id="regularStartField"><div class="label">Start date</div><input id="habitStartDate" type="date" required></div><div id="regularTargetField"><div class="label">Target total</div><input id="habitTarget" type="number" min="1" step="1" required value="7"></div><div id="regularDaysField"><div class="label">Repeat cycle</div><select id="habitRecurrence" onchange="updateHabitRecurrenceFields()"><option value="once">One-time goal</option><option value="weekly">Every week</option><option value="fortnightly">Every 2 weeks</option><option value="monthly">Every 30 days</option><option value="custom">Custom period</option></select></div><div id="habitCustomDaysField" class="hidden"><div class="label">Custom cycle length (days)</div><input id="habitDays" type="number" min="1" step="1" value="14"></div><div id="abstinenceStartField" class="full hidden"><div class="label">Abstinence started</div><input id="habitAbstinenceStart" type="datetime-local"><div class="field-help">You may choose a past date and exact time.</div></div><div id="abstinenceTargetField" class="hidden"><div class="label">Reward after how many days?</div><input id="habitAbstinenceDays" type="number" min="0.01" step="0.01" value="7"></div><div class="full"><div class="label">Achievement bonus (£)</div><input id="habitReward" type="number" min="0" step="0.25" required value="5"></div></div><div class="info-box small"><strong>Activity examples:</strong> gym 4 times every week; laundry 4 loads every 30 days. Each new cycle resets the visible progress while preserving the full history. <strong>Abstinence examples:</strong> no smoking for 7 days; no impulse buying for 30 days. Abstinence streaks begin from an exact date and time.</div><div class="row"><button type="button" class="ghost" onclick="habitDialog.close()">Cancel</button><button id="habitSaveButton" class="primary right">Save habit</button></div></form></dialog>
 <dialog id="habitLogDialog"><form method="dialog" class="modal" onsubmit="saveHabitLog(event)"><h2 id="habitLogDialogTitle">➕ Log habit activity</h2><div id="habitLogHabitName" class="muted"></div><div class="modal-grid"><div><div class="label">Date</div><input id="habitLogDate" type="date" required></div><div><div class="label">How many times / units?</div><input id="habitLogCount" type="number" min="0.01" step="0.01" value="1" required></div><div class="full"><div class="label">Optional note</div><input id="habitLogNote" maxlength="180" placeholder="e.g. Morning session, two loads, 30 minutes"></div></div><div class="info-box small">You may choose a past date and add more than one entry on the same day. You can edit or delete any log later.</div><div class="row"><button type="button" class="ghost" onclick="habitLogDialog.close()">Cancel</button><button class="primary right">Save log</button></div></form></dialog>
 <dialog id="relapseDialog"><form method="dialog" class="modal" onsubmit="saveRelapse(event)"><h2>💔 Record a broken streak</h2><div id="relapseHabitName" class="muted"></div><div class="modal-grid"><div class="full"><div class="label">When was the streak broken?</div><input id="relapseAt" type="datetime-local" required></div><div class="full"><div class="label">Optional note</div><input id="relapseNote" maxlength="180" placeholder="What happened? This is private and judgment-free."></div></div><div class="info-box small">The current streak will restart from this time. Previous streak history will be kept.</div><div class="row"><button type="button" class="ghost" onclick="relapseDialog.close()">Cancel</button><button class="danger right">Restart streak</button></div></form></dialog>
@@ -1375,9 +1381,9 @@ async function handleBonusGameRewards(rows=[]){for(const row of Array.isArray(ro
 async function rollLongGame(mode='normal',loadedValue=null){if(!longGame.room||!longGame.me)return;const startPos=Number(longGame.me.position||0),mainBtn=$("gameRollButton"),homeBtn=$("homeGameRoll"),buttons=[mainBtn,homeBtn].filter(Boolean),control=document.querySelector('.game-roll-compact');buttons.forEach(b=>b.disabled=true);control?.classList.add('is-moving');if($("gameRollButtonText"))$("gameRollButtonText").textContent='Rolling...';if($("homeGameRollText"))$("homeGameRollText").textContent='Rolling...';if($("gameLastResult"))$("gameLastResult").textContent='Rolling the die...';try{const{data:result,error}=await client.rpc("phdone_game_roll",{p_room:longGame.room.id,p_mode:mode,p_loaded_value:loadedValue});if(error)throw error;const rolls=Array.isArray(result.rolls)?result.rolls:[];await animateGameDice(rolls);const bonus=Number(result.roll_bonus||0);if($("gameRollLabel"))$("gameRollLabel").textContent=rolls.length>1?`Rolled ${rolls.join(' + ')}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`:`Rolled ${rolls[0]||result.base_move||0}${bonus?` + ${bonus}`:''} - move ${Number(result.move||0)}`;if($("homeGameRollText"))$("homeGameRollText").textContent=`Move ${Number(result.move||0)}`;await animateLongGameMovement(startPos,result);const primaryReward=(result.tile_type==='box'&&result.reward?.kind!=='personal_box')?{kind:'personal_box',boxes:1,text:'+1 Mystery Box'}:result.reward;await handleLongGameReward(primaryReward,result.roll_event_id);await handleBonusGameRewards(result.bonus_rewards,result.roll_event_id);longGame.lastResult=`<strong>${escapeHtml(String(result.effect||'Moved.'))}</strong> <span class="muted">Now on tile ${Number(result.position||0)}.</span>`;await loadLongGameState(false);if(result.tile_type==='sticker')await showGameStickerLanding();if(result.choice_event_id){openGameChoice(result.choice_event_id)}else if(result.encounter_event_id){launchSoloMinigame(result.encounter_event_id,result.game_type||'timing',result.encounter_name||'NPC')}else if(result.pending_event_id){const inferred=['timing','memory','quicktap'][Number(result.position)%3]||'timing';launchSoloMinigame(result.pending_event_id,result.game_type||inferred)}else if(result.duel_id){await loadLongGameState(false);playGameDuel(result.duel_id)}}catch(error){alert(error.message);await loadLongGameState(false)}finally{control?.classList.remove('is-moving');const dice=Number(longGame.me?.dice_bank||0),left=Math.max(0,25-Number(longGame.me?.focus_remainder||0));if(mainBtn){mainBtn.disabled=dice<1;if($("gameRollButtonText"))$("gameRollButtonText").textContent=dice>0?`Roll ${dice} \u{1F3B2}`:`Need ${Math.ceil(left)}m`}if(homeBtn){homeBtn.disabled=dice<1;if($("homeGameRollText"))$("homeGameRollText").textContent=dice>0?`Roll ${dice}`:`${Math.ceil(left)}m`}}}
 
 
-setInterval(()=>{if(currentUser&&(document.getElementById('tab-game')?.classList.contains('active')||document.getElementById('tab-dashboard')?.classList.contains('active')))loadLongGameState(false)},15000);
+setInterval(()=>{if(!document.hidden&&currentUser&&(document.getElementById('tab-game')?.classList.contains('active')||document.getElementById('tab-dashboard')?.classList.contains('active')))loadLongGameState(false)},30000);
 
-setInterval(()=>{if(currentUser&&data.habits.some(h=>(h.mode||"regular")==="abstinence"))renderHabits()},60000);
+setInterval(()=>{if(!document.hidden&&currentUser&&document.getElementById('tab-habits')?.classList.contains('active')&&data.habits.some(h=>(h.mode||"regular")==="abstinence"))renderHabits()},60000);
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;$('installAppButton')?.classList.remove('hidden')});
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')});
@@ -1480,8 +1486,6 @@ function beginBananaPlacement(itemId){
   const input=$('bananaTileInput');if(input)input.value='';
   setTimeout(()=>centerLongGameTrack(false,true),80);showGameToast('Banana ready — tap any tile or enter a tile number.');
 }
-function cancelBananaPlacement(){bananaPlacement=null;renderBananaPlacementBanner();renderGameBoard()}
-async function placeBananaFromInput(){const n=Math.floor(Number($('bananaTileInput')?.value));if(!Number.isFinite(n)||n<1){alert('Enter a tile number of 1 or higher.');return}await placeBananaOnTile(n)}
 async function placeBananaOnTile(tile){
   if(!bananaPlacement||!longGame.room)return;tile=Math.floor(Number(tile));if(!Number.isFinite(tile)||tile<1)return;
   const itemId=bananaPlacement.itemId;
@@ -1661,7 +1665,7 @@ regenerateCurrentQuests=function(){if(!confirm("Replace today's quests and resta
 
 // Patch the main renderer without duplicating the entire application render function.
 const renderBaseV411=render;
-render=function(){renderBaseV411();renderWeeklyProgressV411();renderWeeklyQuestV411()};
+render=function(){renderBaseV411();renderWeeklyProgressV411()};
 
 function longGameStandingsV411(){return allGameRacers().map(r=>({...r,position:Number(r.position||0)})).sort((a,b)=>b.position-a.position)}
 function myBoardPressureV411(){
@@ -1802,7 +1806,7 @@ async function handleBoardCycleTickV412(){
   if(!currentUser)return;showGameToast('New week — the Party Board has refreshed.');
   if(longGame.me){renderGameBoard();renderGameTrack($('homeGameTrack'),true);document.querySelectorAll('.game-tile').forEach(t=>{t.classList.add('board-shift-pulse');setTimeout(()=>t.classList.remove('board-shift-pulse'),850)});await loadLongGameState(false)}
 }
-setInterval(()=>{handleBoardCycleTickV412().catch(error=>console.warn('Weekly board refresh skipped',error))},30000);
+setInterval(()=>{if(!document.hidden)handleBoardCycleTickV412().catch(error=>console.warn('Weekly board refresh skipped',error))},30000);
 
 
 // PhDone v4.14 - harder party minigames + dramatic dice ----------------------
@@ -2065,7 +2069,7 @@ renderTrends=function(){if(!$('trendKpis'))return;document.querySelectorAll('#tr
 
 // Patch the main renderer so the new controls are always hydrated after data load.
 const renderBaseV414=render;
-render=function(){renderBaseV414();ensureUsdOptionsV414();renderFinance();renderTrends()};
+render=function(){ensureUsdOptionsV414();renderBaseV414()};
 try{ensureUsdOptionsV414()}catch{}
 
 // PhDone v4.15 - dated habit and streak history -----------------------------
@@ -2177,9 +2181,8 @@ renderHabits=function(){
   }).join('')
 };
 
-// Keep history current after ordinary renders and data loads.
-const renderBaseV415=render;
-render=function(){renderBaseV415();renderHabits()};
+// The main renderer resolves the current renderHabits implementation dynamically;
+// an extra second habit render here only duplicated work.
 
 </script>
 
@@ -2199,24 +2202,33 @@ function ensureTaskDraftV416(){
 function taskCurrencyOptionsV416(selected='GBP'){
   return ['GBP','HKD','EUR','USD'].map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v}</option>`).join('')
 }
+function taskTimeUnitModeV432(){
+  try{const v=localStorage.getItem(`phdone-task-time-unit-v432:${currentUser?.id||'anonymous'}`);return ['auto','h','min'].includes(v)?v:'auto'}catch{return'auto'}
+}
+function setTaskTimeUnitV432(mode){
+  if(!['auto','h','min'].includes(mode))mode='auto';try{localStorage.setItem(`phdone-task-time-unit-v432:${currentUser?.id||'anonymous'}`,mode)}catch{}renderTasks()
+}
+function taskTimeToggleHtmlV432(){
+  const mode=taskTimeUnitModeV432();return `<span class="task-time-unit-toggle-v432" aria-label="Task time display"><button type="button" class="${mode==='auto'?'active':''}" onclick="setTaskTimeUnitV432('auto')" aria-pressed="${mode==='auto'}" title="Automatically use hours or minutes">Auto</button><button type="button" class="${mode==='h'?'active':''}" onclick="setTaskTimeUnitV432('h')" aria-pressed="${mode==='h'}" title="Show task times in hours">h</button><button type="button" class="${mode==='min'?'active':''}" onclick="setTaskTimeUnitV432('min')" aria-pressed="${mode==='min'}" title="Show task times in minutes">min</button></span>`
+}
 function taskDurationUiV429(hours=1){
-  const minutes=Math.max(1,Math.round(Math.max(1/60,Number(hours)||1)*60));
-  if(minutes<60)return{value:minutes,unit:'min',min:1,max:60,step:1};
-  return{value:Number((minutes/60).toFixed(2)),unit:'h',min:.01,max:999,step:.25}
+  const safeHours=Math.max(1/60,Number(hours)||1),minutes=Math.max(1,Math.round(safeHours*60)),mode=taskTimeUnitModeV432();
+  if(mode==='min'||(mode==='auto'&&minutes<60))return{value:minutes,unit:'min',min:1,max:59940,step:1};
+  return{value:Number(safeHours.toFixed(2)),unit:'h',min:.01,max:999,step:'any'}
 }
 function taskDurationHoursV429(input){
   const n=Number(input?.value);if(!Number.isFinite(n)||n<=0)return 1/60;
   return input.dataset.unit==='min'?Math.max(1,n)/60:Math.max(1/60,n)
 }
 function normalizeTaskDurationInputV429(input){
-  if(!input)return;let n=Number(input.value),unit=input.dataset.unit||'h';if(!Number.isFinite(n)||n<=0)return;
-  if(unit==='h'&&n<1){n=Math.max(1,Math.min(59,Math.round(n*60)));unit='min';input.value=String(n);input.min='1';input.max='60';input.step='1'}
-  else if(unit==='min'&&n>=60){n=n/60;unit='h';input.value=String(Number(n.toFixed(2)));input.min='.01';input.max='999';input.step='.25'}
-  input.dataset.unit=unit;const suffix=input.parentElement?.querySelector('.task-duration-unit-v429');if(suffix)suffix.textContent=unit
+  if(!input)return;let n=Number(input.value),unit=input.dataset.unit||'h';if(!Number.isFinite(n)||n<=0)return;const mode=taskTimeUnitModeV432();
+  if(mode==='auto'&&unit==='h'&&n<1){n=Math.max(1,Math.min(59,Math.round(n*60)));unit='min';input.value=String(n)}
+  else if(mode==='auto'&&unit==='min'&&n>=60){n=n/60;unit='h';input.value=String(Number(n.toFixed(2)))}
+  input.dataset.unit=unit;input.min=unit==='min'?'1':'.01';input.max=unit==='min'?'59940':'999';input.step=unit==='min'?'1':'any';const suffix=input.parentElement?.querySelector('.task-duration-unit-v429');if(suffix)suffix.textContent=unit
 }
 function taskDurationControlV429(hours,id=null,isDraft=false){
   const u=taskDurationUiV429(hours),change=isDraft?`updateTaskDraftDurationV429(this)`:`commitTaskDurationV429(this,${JSON.stringify(id)})`;
-  return `<div class="task-duration-v429"><input class="task-cell-input task-number-input task-duration-input-v429" type="number" min="${u.min}" max="${u.max}" step="${u.step}" value="${u.value}" data-unit="${u.unit}" aria-label="Planned time" oninput="normalizeTaskDurationInputV429(this);${isDraft?"updateTaskDraftV416('hours',taskDurationHoursV429(this))":''}" onchange='${change}' onkeydown="taskInlineKeyV416(event)"><span class="task-duration-unit-v429">${u.unit}</span></div>`
+  return `<div class="task-duration-v429"><input class="task-cell-input task-number-input task-duration-input-v429" type="number" min="${u.min}" max="${u.max}" step="${u.step}" value="${u.value}" data-unit="${u.unit}" aria-label="Planned time in ${u.unit==='min'?'minutes':'hours'}" oninput="normalizeTaskDurationInputV429(this);${isDraft?"updateTaskDraftV416('hours',taskDurationHoursV429(this))":''}" onchange='${change}' onkeydown="taskInlineKeyV416(event)"><span class="task-duration-unit-v429">${u.unit}</span></div>`
 }
 function updateTaskDraftDurationV429(input){normalizeTaskDurationInputV429(input);updateTaskDraftV416('hours',taskDurationHoursV429(input))}
 function commitTaskDurationV429(input,id){normalizeTaskDurationInputV429(input);updateTaskFieldV416(id,'hours',taskDurationHoursV429(input))}
@@ -2260,11 +2272,12 @@ renderTasks=function(){
   if(filter==='active')visible=visible.filter(t=>!t.done||taskCompletedTodayV424(t));else if(filter==='today')visible=visible.filter(t=>(!t.done&&t.date===today())||taskCompletedTodayV424(t));else if(filter==='done')visible=visible.filter(t=>t.done);
   visible=[...visible].sort((a,b)=>Number(a.done)-Number(b.done)||String(a.date||'').localeCompare(String(b.date||''))||String(b.created||'').localeCompare(String(a.created||'')));
   const host=$('taskList');if(!host)return;
-  const header=`<div class="task-sheet-head"><div class="task-col-check" title="Complete"></div><div class="task-col-name">Task</div><div>Project</div><div>Due</div><div>Time</div><div>Finish £</div><div>Income</div><div>Actions</div></div>`;
+  const header=`<div class="task-sheet-head"><div class="task-col-check" title="Complete"></div><div class="task-col-name">Task</div><div>Project</div><div>Due</div><div class="task-time-head-v432"><span>Time</span>${taskTimeToggleHtmlV432()}</div><div>Finish £</div><div>Income</div><div>Actions</div></div>`;
   const empty=!visible.length?`<div class="task-sheet-empty">${q?'No tasks match this search.':filter==='done'?'No completed tasks yet.':'No tasks here yet — use the row below to add one.'}</div>`:'';
   const add=filter==='done'?'':taskAddRowHtmlV416();
   host.innerHTML=`<div class="task-sheet-wrap">${header}${visible.map(taskRowHtmlV416).join('')}${empty}${add}</div><div class="task-sheet-footer"><span>Edit any cell directly. Completed today stays visible until tomorrow.</span>${filter==='done'?'<button class="ghost small" onclick="focusNewTaskRowV416()">＋ Add a to-do</button>':'<span><kbd>Enter</kbd> on the new row adds it · <kbd>Tab</kbd> moves across columns</span>'}</div>`
 };
+function scheduleSaveOnlyV432(){setSyncStatus("Saving...");clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveNow(),250);return true}
 function updateTaskFieldV416(id,field,value){
   const t=(data.tasks||[]).find(x=>x.id===id);if(!t)return;
   if(field==='name'){value=String(value||'').trim();if(!value){renderTasks();return}}
@@ -2275,7 +2288,7 @@ function updateTaskFieldV416(id,field,value){
   if(field==='date')value=value||today();
   t[field]=value;if(field==='projectId')t.category=value;
   if(['name','date','income','incomeCurrency'].includes(field))syncTaskIncome(t);
-  syncAppRewardLedger();save()
+  syncAppRewardLedger();scheduleSaveOnlyV432()
 }
 async function addInlineTaskV416(){
   const d={...ensureTaskDraftV416(),name:String(ensureTaskDraftV416().name||'').trim()};
@@ -2493,7 +2506,7 @@ showRealIncomeInLedger=function(){setMoneyTabV418('transactions');if($('ledgerFi
 
 // Column chooser shared by Tasks, Habits, Dreams, Purchases and Transactions.
 const SHEET_CONFIG_V418={
- tasks:{host:'taskList',row:'.task-sheet-head,.task-sheet-row',footer:'.task-sheet-footer',templates:['48px','minmax(300px,1.7fr)','190px','150px','100px','120px','140px','156px'],mins:[48,300,190,150,100,120,140,156],cols:[['complete','Complete'],['task','Task'],['project','Project'],['due','Due'],['hours','Time'],['finish','Finish £'],['income','Income'],['actions','Actions']],required:['complete','task','actions'],defaultHidden:['project','finish']},
+ tasks:{host:'taskList',row:'.task-sheet-head,.task-sheet-row',footer:'.task-sheet-footer',templates:['48px','minmax(300px,1.7fr)','190px','150px','124px','120px','140px','156px'],mins:[48,300,190,150,124,120,140,156],cols:[['complete','Complete'],['task','Task'],['project','Project'],['due','Due'],['hours','Time'],['finish','Finish £'],['income','Income'],['actions','Actions']],required:['complete','task','actions'],defaultHidden:['project','finish']},
  habits:{host:'habitList',row:'.data-sheet-head-v417,.data-sheet-row-v417',footer:'.sheet-footer-v417',templates:['48px','minmax(190px,1.8fr)','105px','150px','178px','95px','125px','95px','125px','138px'],mins:[48,190,105,150,178,95,125,95,125,138],cols:[['quick','Quick'],['habit','Habit'],['type','Type'],['project','Project'],['start','Start'],['goal','Goal'],['repeat','Repeat'],['reward','Reward'],['progress','Progress'],['actions','Actions']],required:['quick','habit','actions'],defaultHidden:['type','project','start','reward']},
  dreams:{host:'wishList',row:'.data-sheet-head-v417,.data-sheet-row-v417',footer:'.sheet-footer-v417',templates:['72px','minmax(190px,1.6fr)','100px','145px','118px','minmax(170px,1.2fr)','118px','142px'],mins:[72,190,100,145,118,170,118,142],cols:[['photo','Photo'],['item','Dream item'],['price','Price'],['target','Target'],['priority','Priority'],['note','Note'],['progress','Progress'],['actions','Actions']],required:['item','actions'],defaultHidden:['note','progress']},
  purchases:{host:'purchaseList',row:'.data-sheet-head-v417,.data-sheet-row-v417',footer:'.sheet-footer-v417',templates:['48px','minmax(230px,2fr)','150px','120px','minmax(160px,1fr)','90px'],mins:[48,230,150,120,160,90],cols:[['icon','Icon'],['purchase','Purchase'],['date','Date'],['amount','Amount'],['money','Money link'],['actions','Actions']],required:['purchase','actions'],defaultHidden:['icon','money']},
@@ -2529,7 +2542,7 @@ const openHabitHistoryBaseV418=openHabitHistoryV415;openHabitHistoryV415=functio
 renderHabitHistoryDialogV415=function(){const index=Number(habitHistoryContextV415?.habitIndex),h=data.habits?.[index],list=$('habitHistoryList'),summary=$('habitHistorySummary'),add=$('habitHistoryAddButton');if(!h||!list||!summary||!add)return;$('habitHistoryTitle').textContent=h.name;$('habitHistorySubtitle').textContent=(h.mode||'regular')==='abstinence'?'Exact streak dates and broken-streak records.':'Every recorded activity entry, with its exact date.';const size=habitHistoryPageSizeV418();if((h.mode||'regular')==='abstinence'){const relapses=sortedRelapsesV415(h),started=displayDateTimeV415(h.abstinenceStartedAt),claimed=h.cycleClaimedAt?`<div class="habit-history-claim">Reward claimed ${escapeHtml(displayDateTimeV415(h.cycleClaimedAt))}.</div>`:'';summary.innerHTML=`<strong>Current streak: ${escapeHtml(started)}</strong><div class="muted small">${relapses.length} recorded break${relapses.length===1?'':'s'}.</div>${claimed}`;const pages=Math.max(1,Math.ceil(relapses.length/size));habitHistoryPageV418=Math.min(habitHistoryPageV418,pages-1);const slice=relapses.slice(habitHistoryPageV418*size,(habitHistoryPageV418+1)*size);list.innerHTML=`<div class="habit-history-row current"><div class="history-date">Current streak</div><div class="history-detail"><strong>${escapeHtml(started)}</strong><small>Current start date/time</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editStreakStartFromHistoryV415(${index})">Edit</button></div></div>`+(slice.length?slice.map(r=>`<div class="habit-history-row"><div class="history-date">${escapeHtml(displayDateTimeV415(r.at))}</div><div class="history-detail"><strong>Broken streak</strong><small>${Number(r.durationDays||0).toFixed(Number(r.durationDays||0)<1?2:1)} days${r.note?` · ${escapeHtml(r.note)}`:''}</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editRelapseFromHistoryV415(${index},'${r.id}')">Edit</button><button type="button" class="ghost" onclick="deleteRelapseV415(${index},'${r.id}')">Delete</button></div></div>`).join(''):'<div class="habit-history-empty">No broken streaks recorded yet.</div>')+habitPagerHtmlV418(relapses.length);add.textContent='Record broken streak';add.onclick=()=>{habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openRelapseDialog(index)}}else{const logs=sortedHabitLogsV415(h),cycle=habitCurrentCycle(h),cycleCount=habitCycleTotal(h,cycle),pages=Math.max(1,Math.ceil(logs.length/size));habitHistoryPageV418=Math.min(habitHistoryPageV418,pages-1);const slice=logs.slice(habitHistoryPageV418*size,(habitHistoryPageV418+1)*size);summary.innerHTML=`<strong>${escapeHtml(habitRecurrenceLabel(h))} · ${displayCountV415(cycleCount)} / ${displayCountV415(h.target)} this cycle</strong><div class="muted small">${escapeHtml(displayDate(cycle.start))}–${escapeHtml(displayDate(cycle.end))} · ${logs.length} records · ${displayCountV415(habitTotal(h))} total units</div>`;list.innerHTML=slice.length?slice.map(log=>`<div class="habit-history-row"><div class="history-date">${escapeHtml(displayDate(log.date))}</div><div class="history-detail"><strong>${escapeHtml(displayCountV415(log.count))} ${Number(log.count)===1?'unit':'units'}</strong><small>${log.note?escapeHtml(log.note):'No note'}</small></div><div class="habit-history-actions"><button type="button" class="ghost" onclick="editHabitLogFromHistoryV415(${index},'${log.id}')">Edit</button><button type="button" class="ghost" onclick="deleteHabitLogFromHistoryV415(${index},'${log.id}')">Delete</button></div></div>`).join(''):'<div class="habit-history-empty">No activity dates recorded yet.</div>';list.innerHTML+=habitPagerHtmlV418(logs.length);add.textContent='+ Log activity';add.onclick=()=>{habitHistoryReturnV415=index;$('habitHistoryDialog')?.close();openHabitLogDialog(index)}}};
 
 // Re-apply layout enhancements whenever the full app renderer runs.
-const renderBaseV418=render;render=function(){renderBaseV418();restoreMoneyTabV418();applySheetColumnsV418('tasks');applySheetColumnsV418('habits');applySheetColumnsV418('dreams');applySheetColumnsV418('purchases');if(moneyTabV418==='transactions')applySheetColumnsV418('finance')};
+const renderBaseV418=render;render=function(){const result=renderBaseV418();restoreMoneyTabV418();return result};
 restoreMoneyTabV418();setTimeout(()=>{applySheetColumnsV418('tasks');applySheetColumnsV418('habits');applySheetColumnsV418('dreams');applySheetColumnsV418('purchases');if(moneyTabV418==='transactions')applySheetColumnsV418('finance')},250);
 </script>
 
@@ -2555,7 +2568,6 @@ restoreMoneyTabV418();setTimeout(()=>{applySheetColumnsV418('tasks');applySheetC
 // PhDone v4.20 — desktop keeps row-first sheets; phones restore the earlier card/modal workflows.
 const mobileEditorMediaV420=window.matchMedia('(max-width: 760px)');
 function isMobileEditorV420(){return mobileEditorMediaV420.matches}
-function isTaskMobileV420(){return isMobileEditorV420()}
 
 // ---- Tasks -----------------------------------------------------------------
 const renderTasksDesktopV420=renderTasks;
@@ -2696,7 +2708,7 @@ decorateEditorModeV420();
     </div>
     <button type="button" class="ghost mobile-task-more-toggle-v421" onclick="toggleMobileTaskMoreV421()"><span id="mobileTaskMoreLabelV421">＋ More details</span></button>
     <div id="mobileTaskMoreV421" class="mobile-task-more-v421 hidden">
-      <label><span class="label">Planned time (hours)</span><input id="mobileTaskHoursV421" type="number" min="0.0166667" step="0.0166667" inputmode="decimal"></label>
+      <label><span class="label">Planned time (hours)</span><input id="mobileTaskHoursV421" type="number" min="0.0166667" step="any" inputmode="decimal"></label>
       <label><span class="label">Finish bonus (£)</span><input id="mobileTaskRewardV421" type="number" min="0" step="0.25" inputmode="decimal"></label>
       <label style="grid-column:1/-1"><span class="label">Income generated (optional)</span><div class="mobile-task-income-v421"><input id="mobileTaskIncomeV421" type="number" min="0" step="0.01" inputmode="decimal"><select id="mobileTaskCurrencyV421"><option value="GBP">GBP</option><option value="HKD">HKD</option><option value="EUR">EUR</option><option value="USD">USD</option></select></div></label>
     </div>
@@ -2816,7 +2828,6 @@ setTimeout(()=>{renderProjects();updateMobileTaskFabV421()},0);
 </style>
 <script>
 // PhDone v4.26 — Chrome installability + resilient Focus dock/PiP fallback ----
-const PHDONE_VERSION_V425='4.26';
 let focusVideoPipV425=null,focusVideoCanvasV425=null,focusVideoCtxV425=null,focusVideoStreamV425=null;
 
 function isStandaloneV425(){
@@ -2843,7 +2854,6 @@ function ensureFocusDockV425(){
   document.body.appendChild(dock);return dock;
 }
 
-const renderFocusDockBeforeV425=typeof renderFocusDockV417==='function'?renderFocusDockV417:null;
 renderFocusDockV417=function(){
   const dock=ensureFocusDockV425(),active=Boolean(typeof focusActiveV417==='function'?focusActiveV417():(focusRuntime?.running||focusElapsedSec?.()>0));
   dock.classList.toggle('hidden',!active);dock.classList.toggle('v425-visible',active);dock.style.display=active?'block':'none';
@@ -3106,7 +3116,7 @@ function polishHabitLogV427(){
   const footer=document.querySelector('#habitList .sheet-footer-v417>span:first-child');if(footer)footer.innerHTML='Tap <strong>+</strong> to record one activity today; 📅 opens exact dated history.';
 }
 if(typeof SHEET_CONFIG_V418!=='undefined'&&SHEET_CONFIG_V418.habits){SHEET_CONFIG_V418.habits.templates[0]='58px';SHEET_CONFIG_V418.habits.mins[0]=58}
-function postRenderOrderV427(kind){tagRowsV427(kind);if(kind==='habits')polishHabitLogV427();if(typeof applySheetColumnsV418==='function'&&!isMobileEditorV420?.())applySheetColumnsV418(kind)}
+function postRenderOrderV427(kind){tagRowsV427(kind);if(kind==='habits')polishHabitLogV427()}
 const renderTasksBeforeV427=renderTasks;renderTasks=function(){const r=renderTasksBeforeV427();postRenderOrderV427('tasks');return r};
 const renderHabitsBeforeV427=renderHabits;renderHabits=function(){const r=renderHabitsBeforeV427();postRenderOrderV427('habits');return r};
 const renderWishlistBeforeV427=renderWishlist;renderWishlist=function(){const r=renderWishlistBeforeV427();postRenderOrderV427('dreams');return r};
@@ -3353,6 +3363,7 @@ setTimeout(()=>{injectClearFinishedV430()},200);
 })();
 </script>
 
+<!-- PhDone v4.33: fix hour-input validity while retaining minute-precise task durations. -->
 <!-- PhDone v4.31: 200-tile scored Long Game, five power-ups, real-user-first challenges, no snakes/ladders. -->
 </body></html>
 
