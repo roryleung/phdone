@@ -486,7 +486,7 @@ dialog{border:1px solid rgba(84,63,158,.10);box-shadow:0 28px 90px rgba(38,27,81
 <button class="more-link" onclick="showTab('money')"><span class="more-icon">💷</span><strong>Money</strong><small>Income, spending, savings and reports</small></button>
 <button class="more-link" onclick="showTab('progress')"><span class="more-icon">🏛️</span><strong>Progress</strong><small>Lifetime XP and milestone rewards</small></button>
 <button class="more-link" onclick="showTab('settings')"><span class="more-icon">⚙️</span><strong>Settings</strong><small>Projects, rewards, stickers and account</small></button>
-<button id="installAppButton" class="more-link" onclick="installPhDone()"><span class="more-icon">📲</span><strong>Install PhDone</strong><small>Add the app to this device</small></button>
+<button id="installAppButton" class="more-link" onclick="installPhDone()"><span class="more-icon">📲</span><strong>Install PhDone</strong><small>Install as a web app · no APK needed</small></button>
 <button id="adminDashboardButton" class="more-link hidden" onclick="location.href='admin.html'"><span class="more-icon">🛡️</span><strong>Admin dashboard</strong><small>Accounts and system stickers</small></button>
 <button class="more-link" onclick="logout()"><span class="more-icon">🚪</span><strong>Log out</strong><small>Sign out of this device</small></button>
 </div></div>
@@ -1387,7 +1387,7 @@ setInterval(()=>{if(!document.hidden&&currentUser&&document.getElementById('tab-
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;$('installAppButton')?.classList.remove('hidden')});
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')});
-async function installPhDone(){if(!deferredInstallPrompt){alert('On Android, open your browser menu and choose “Install app” or “Add to Home screen”.');return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')}
+async function installPhDone(){if(!deferredInstallPrompt){alert('Install PhDone as a web app from Chrome’s own menu. Do not download an APK or enable “Allow from this source”.');return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installAppButton')?.classList.add('hidden')}
 // v4.25 registers the service worker after the full app has parsed.
 let authBootstrapTokenV411=0;
 async function bootstrapAuthenticatedSessionV411(user,{recovery=false}={}){
@@ -3021,6 +3021,7 @@ setTimeout(()=>{updateInstallUiV425();renderFocusDockV417()},350);
 .install-diagnostic-v427::backdrop{background:rgba(20,18,35,.52);backdrop-filter:blur(2px)}
 .install-panel-v427{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 22px 70px rgba(20,18,45,.28)}
 .install-panel-v427 h2{font-size:1.18rem;margin:0 0 5px}.install-panel-v427 p{line-height:1.45}.install-status-v427{display:grid;gap:7px;margin:15px 0;padding:12px;border-radius:14px;background:#f8f7fc}.install-status-row-v427{display:flex;align-items:center;gap:8px;font-size:.88rem}.install-ok-v427{color:#087a60}.install-warn-v427{color:#9a5b00}.install-steps-v427{margin:12px 0 0;padding-left:22px;line-height:1.55}.install-actions-v427{display:flex;gap:8px;justify-content:flex-end;margin-top:17px;flex-wrap:wrap}
+.install-apk-warning-v434{margin:12px 0;padding:11px 12px;border:1px solid #e4a11b;border-radius:12px;background:#fff8e8;color:#6d4700;font-size:.84rem;line-height:1.45}
 @media(max-width:760px){.reorder-handle-v427{width:28px;height:40px;font-size:17px!important}.install-diagnostic-v427{width:calc(100% - 18px)}.install-panel-v427{padding:17px;border-radius:20px}.habit-quick-v417:not(.streak){width:38px;min-width:38px;height:38px}}
 </style>
 
@@ -3138,22 +3139,24 @@ function installInstructionsV427(){
   const ua=navigator.userAgent,android=/Android/i.test(ua),ios=isIosV427(),safari=isSafariV427(),chromium=typeof isChromiumV425==='function'?isChromiumV425():/Chrome|Chromium|Edg/i.test(ua);
   if(ios)return{lead:'Safari can install PhDone as a Home Screen web app.',steps:['Tap the Share button in Safari.','Choose Add to Home Screen.','Turn on Open as Web App if Safari offers that option, then tap Add.']};
   if(safari)return{lead:'Safari can install PhDone directly on your Mac.',steps:['In Safari, choose File → Add to Dock.','Confirm the name PhDone and choose Add.','Open PhDone from the Dock or Applications folder.']};
-  if(android&&chromium)return{lead:'Chrome can install PhDone as an Android web app.',steps:['Open Chrome’s ⋮ menu.','Choose Add to Home screen or Install app.','Choose Install.']};
+  if(android&&chromium)return{lead:'Install PhDone as a Chrome web app — no APK or “unknown apps” permission is needed.',steps:['Keep this HTTPS PhDone page open in Chrome.','Open Chrome’s ⋮ menu and choose Install app / Install PhDone. On some Chrome versions this is under Add to Home screen → Install.','If Android opens “Install unknown apps”, says the source may put your phone or data at risk, or asks for “Allow from this source”, CANCEL. That is APK sideloading, not PhDone’s web-app install.']};
+  if(android)return{lead:'For the safest Android installation, open PhDone’s HTTPS page in Google Chrome and install it as a web app.',steps:['Open the same PhDone URL in Google Chrome.','Use Chrome’s ⋮ menu → Install app / Install PhDone.','Do not download an .apk file and do not enable “Allow from this source”. If that screen appears, cancel it.']};
   if(chromium)return{lead:'PhDone is ready for Chrome’s desktop app installation flow.',steps:['Open Chrome’s ⋮ menu.','Open Cast, save, and share (wording varies by Chrome version).','Choose Install PhDone or Install page as app.']};
   return{lead:'Your browser can usually add PhDone to the device from its page or share menu.',steps:['Open the browser’s page/share menu.','Look for Install app, Add to Home Screen, or Add to Dock.']};
 }
 async function showInstallHelpV427(recheck=false){
   const d=ensureInstallDialogV427(),diag=await pwaDiagnosticsV427(),copy=installInstructionsV427();$('installLeadV427').textContent=copy.lead;
   const rows=[['Secure page',diag.secure],['Web-app manifest',diag.manifestOk],['Service worker registered',diag.swOk]];$('installStatusV427').innerHTML=rows.map(([label,ok])=>`<div class="install-status-row-v427 ${ok?'install-ok-v427':'install-warn-v427'}"><span>${ok?'✓':'!'}</span><span><strong>${label}</strong>${label==='Web-app manifest'?` · ${escapeHtml(diag.manifestText)}`:''}${label==='Service worker registered'&&diag.swOk&&!diag.swControl?' · registered; control may begin after one reload':''}</span></div>`).join('');
-  const intro=diag.manifestOk&&diag.swOk?'<p class="small"><strong>The PWA files are detected.</strong> Chrome does not always fire its install prompt, so a missing pop-up does not mean your deployment failed.</p>':'<p class="small"><strong>One or more install prerequisites are not currently visible to this page.</strong> Deploy the whole v4.27 folder and reload from HTTPS.</p>';
-  $('installStepsV427').innerHTML=intro+`<ol class="install-steps-v427">${copy.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ol>`;if(!d.open)safeShowModal(d)
+  const intro=diag.manifestOk&&diag.swOk?'<p class="small"><strong>The PWA files are detected.</strong> Chrome does not always fire its install prompt, so a missing pop-up does not mean your deployment failed.</p>':'<p class="small"><strong>One or more install prerequisites are not currently visible to this page.</strong> Deploy the whole app folder and reload from HTTPS.</p>';
+  const androidSafety=/Android/i.test(navigator.userAgent)?'<div class="install-apk-warning-v434"><strong>Android safety check</strong><br>PhDone’s web-app install never needs the <em>Install unknown apps</em> permission. If you see “Installing apps from this source may put your phone and data at risk” or “Allow from this source”, cancel that screen and return to Chrome.</div>':'';
+  $('installStepsV427').innerHTML=intro+androidSafety+`<ol class="install-steps-v427">${copy.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ol>`;if(!d.open)safeShowModal(d)
 }
 installPhDone=async function(){
   if(typeof isStandaloneV425==='function'&&isStandaloneV425()){const d=ensureInstallDialogV427();$('installLeadV427').textContent='PhDone is already running in standalone app mode.';$('installStatusV427').innerHTML='<div class="install-status-row-v427 install-ok-v427"><span>✓</span><span><strong>Installed web app</strong></span></div>';$('installStepsV427').innerHTML='<p class="small">You can keep using this window; there is nothing else to install.</p>';safeShowModal(d);return}
   if(deferredInstallPrompt){deferredInstallPrompt.prompt();const choice=await deferredInstallPrompt.userChoice;if(choice?.outcome==='accepted')deferredInstallPrompt=null;updateInstallUiV425?.();return}
   await showInstallHelpV427();
 };
-async function updateInstallReadinessV427(){const b=$('installAppButton');if(!b||isStandaloneV425?.())return;const small=b.querySelector('small');try{const d=await pwaDiagnosticsV427();if(small)small.textContent=d.manifestOk&&d.swOk?'Ready to install · browser menu also works':'Add PhDone to this device'}catch{}}
+async function updateInstallReadinessV427(){const b=$('installAppButton');if(!b||isStandaloneV425?.())return;const small=b.querySelector('small');try{const d=await pwaDiagnosticsV427(),android=/Android/i.test(navigator.userAgent);if(small)small.textContent=d.manifestOk&&d.swOk?(android?'Web app install · no APK permission':'Ready to install · browser menu also works'):'Add PhDone to this device'}catch{}}
 window.addEventListener('load',()=>setTimeout(updateInstallReadinessV427,550));
 window.addEventListener('pageshow',()=>setTimeout(updateInstallReadinessV427,300));
 
@@ -3371,5 +3374,6 @@ setTimeout(()=>{injectClearFinishedV430()},200);
 <!-- PhDone v4.25: restored Chrome PWA install files and hardened persistent Focus/PiP. -->
 <!-- PhDone v4.26: Focus continues across backgrounding/closed tabs and reconstructs elapsed wall-clock time on return. -->
 <!-- PhDone v4.28: centred ticks, draggable user lists, cleaner habit logging and browser-aware PWA install diagnostics. -->
+<!-- PhDone v4.34: hardened Android PWA install guidance; explicitly rejects APK/unknown-source sideload flow. -->
 <!-- PhDone v4.29: compact income currency, minute-aware task time, and single-plus habit logging. -->
 <!-- PhDone v4.30: clear-finished working view and smoother non-recentring Long Game travel. -->
